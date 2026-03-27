@@ -1,0 +1,943 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sustainability Score - ReWear Lifecycle Engine</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --primary-green: #2d5a3d;
+            --light-green: #4a7c59;
+            --accent-green: #7ab882;
+            --bright-green: #52a572;
+            --beige: #f5f1e8;
+            --light-beige: #faf8f3;
+            --dark-text: #1a1a1a;
+            --text-gray: #666666;
+            --light-gray: #e8e6e1;
+            --shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+            --shadow-lg: 0 8px 24px rgba(0, 0, 0, 0.12);
+            --eco-gold: #d4a574;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, var(--light-beige) 0%, #f0ede3 100%);
+            color: var(--dark-text);
+            line-height: 1.6;
+            min-height: 100vh;
+        }
+
+        /* Header */
+        header {
+            background: white;
+            padding: 1.2rem 0;
+            box-shadow: var(--shadow);
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+
+        .header-container {
+            max-width: 1600px;
+            margin: 0 auto;
+            padding: 0 2rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .logo {
+            font-size: 1.8rem;
+            font-weight: 700;
+            color: var(--primary-green);
+            text-decoration: none;
+            letter-spacing: 2px;
+        }
+
+        .logo span {
+            color: var(--accent-green);
+        }
+
+        .header-right {
+            display: flex;
+            gap: 2rem;
+            align-items: center;
+        }
+
+        .breadcrumb {
+            color: var(--text-gray);
+            font-size: 0.9rem;
+        }
+
+        .breadcrumb a {
+            color: var(--light-green);
+            text-decoration: none;
+            transition: color 0.3s ease;
+        }
+
+        .breadcrumb a:hover {
+            color: var(--primary-green);
+        }
+
+        /* Main Container */
+        .container {
+            max-width: 1600px;
+            margin: 0 auto;
+            padding: 2rem;
+        }
+
+        /* Page Title */
+        .page-title {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: 2rem;
+        }
+
+        .title-content h1 {
+            font-size: 2rem;
+            color: var(--primary-green);
+            margin-bottom: 0.5rem;
+            font-weight: 700;
+        }
+
+        .title-content p {
+            color: var(--text-gray);
+            font-size: 1rem;
+        }
+
+        .action-buttons {
+            display: flex;
+            gap: 1rem;
+        }
+
+        .btn-secondary {
+            padding: 0.7rem 1.5rem;
+            background: white;
+            color: var(--dark-text);
+            border: 1.5px solid var(--light-gray);
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            text-decoration: none;
+            font-size: 0.9rem;
+        }
+
+        .btn-secondary:hover {
+            border-color: var(--light-green);
+            background: rgba(245, 241, 232, 0.5);
+        }
+
+        /* Main Grid Layout */
+        .dashboard-grid {
+            display: grid;
+            grid-template-columns: 300px 1fr;
+            gap: 2rem;
+            margin-bottom: 2rem;
+        }
+
+        /* Product Card */
+        .product-card {
+            background: white;
+            border-radius: 16px;
+            padding: 1.5rem;
+            box-shadow: var(--shadow);
+            height: fit-content;
+            position: sticky;
+            top: 100px;
+        }
+
+        .product-image {
+            width: 100%;
+            height: 280px;
+            background: linear-gradient(135deg, var(--beige) 0%, var(--light-beige) 100%);
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 5rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .product-info h3 {
+            font-size: 1.1rem;
+            color: var(--dark-text);
+            margin-bottom: 0.5rem;
+            font-weight: 600;
+        }
+
+        .product-meta {
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+            color: var(--text-gray);
+            font-size: 0.9rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .meta-item {
+            display: flex;
+            justify-content: space-between;
+        }
+
+        .product-tags {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.5rem;
+            margin-top: 1rem;
+        }
+
+        .tag {
+            background: linear-gradient(135deg, var(--accent-green), var(--bright-green));
+            color: white;
+            padding: 0.4rem 0.8rem;
+            border-radius: 6px;
+            font-size: 0.75rem;
+            font-weight: 600;
+        }
+
+        /* Score Section */
+        .score-section {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 2rem;
+        }
+
+        /* Main Score Card */
+        .main-score-card {
+            background: white;
+            border-radius: 16px;
+            padding: 2rem;
+            box-shadow: var(--shadow);
+        }
+
+        .score-header {
+            text-align: center;
+            margin-bottom: 2rem;
+        }
+
+        .score-header h2 {
+            font-size: 1.2rem;
+            color: var(--primary-green);
+            margin-bottom: 0.5rem;
+            font-weight: 700;
+        }
+
+        /* Circular Progress */
+        .circular-progress-wrapper {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            margin: 2rem 0;
+        }
+
+        .circular-progress {
+            position: relative;
+            width: 200px;
+            height: 200px;
+        }
+
+        .progress-circle {
+            width: 100%;
+            height: 100%;
+        }
+
+        .progress-bg {
+            fill: none;
+            stroke: var(--light-gray);
+            stroke-width: 12;
+        }
+
+        .progress-bar {
+            fill: none;
+            stroke: url(#scoreGradient);
+            stroke-width: 12;
+            stroke-linecap: round;
+            stroke-dasharray: 466;
+            stroke-dashoffset: 104;
+            transform: rotate(-90deg);
+            transform-origin: 50% 50%;
+            transition: stroke-dashoffset 1.5s ease 0.3s;
+        }
+
+        .progress-text {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            text-align: center;
+        }
+
+        .progress-number {
+            font-size: 3.5rem;
+            font-weight: 700;
+            color: var(--primary-green);
+        }
+
+        .progress-label {
+            font-size: 1rem;
+            color: var(--text-gray);
+            margin-top: 0.3rem;
+        }
+
+        .eco-badge {
+            display: inline-block;
+            background: linear-gradient(135deg, var(--bright-green), var(--light-green));
+            color: white;
+            padding: 0.7rem 1.5rem;
+            border-radius: 20px;
+            font-weight: 600;
+            font-size: 0.95rem;
+            margin-top: 1.5rem;
+            box-shadow: 0 4px 12px rgba(82, 165, 114, 0.3);
+        }
+
+        .badge-icon {
+            margin-right: 0.6rem;
+        }
+
+        /* Breakdown Section */
+        .breakdown-section {
+            margin-top: 2rem;
+        }
+
+        .breakdown-title {
+            font-size: 1.1rem;
+            font-weight: 700;
+            color: var(--primary-green);
+            margin-bottom: 1.5rem;
+            padding-bottom: 1rem;
+            border-bottom: 2px solid var(--light-gray);
+        }
+
+        .breakdown-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 1.5rem;
+        }
+
+        /* Score Card */
+        .score-card {
+            background: linear-gradient(135deg, rgba(122, 184, 130, 0.05), rgba(245, 241, 232, 0.5));
+            border: 1.5px solid var(--light-gray);
+            border-radius: 12px;
+            padding: 1.5rem;
+            transition: all 0.3s ease;
+        }
+
+        .score-card:hover {
+            border-color: var(--accent-green);
+            box-shadow: 0 6px 16px rgba(122, 184, 130, 0.15);
+            transform: translateY(-2px);
+        }
+
+        .card-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1rem;
+        }
+
+        .card-title {
+            font-size: 1rem;
+            font-weight: 600;
+            color: var(--dark-text);
+            display: flex;
+            align-items: center;
+            gap: 0.6rem;
+        }
+
+        .card-icon {
+            font-size: 1.4rem;
+        }
+
+        .card-score {
+            font-size: 1.8rem;
+            font-weight: 700;
+            color: var(--primary-green);
+        }
+
+        /* Progress Bar */
+        .progress-bar-wrapper {
+            margin: 1rem 0;
+        }
+
+        .progress-label-top {
+            display: flex;
+            justify-content: space-between;
+            font-size: 0.85rem;
+            color: var(--text-gray);
+            margin-bottom: 0.6rem;
+        }
+
+        .bar-container {
+            width: 100%;
+            height: 8px;
+            background: var(--light-gray);
+            border-radius: 4px;
+            overflow: hidden;
+        }
+
+        .bar-fill {
+            height: 100%;
+            background: linear-gradient(90deg, var(--accent-green), var(--bright-green));
+            border-radius: 4px;
+            transition: width 1s ease 0.5s;
+        }
+
+        .card-description {
+            font-size: 0.85rem;
+            color: var(--text-gray);
+            line-height: 1.5;
+            margin-top: 1rem;
+        }
+
+        .metric-insights {
+            display: flex;
+            gap: 0.5rem;
+            margin-top: 1rem;
+            padding-top: 1rem;
+            border-top: 1px solid rgba(122, 184, 130, 0.2);
+        }
+
+        .insight-item {
+            font-size: 0.75rem;
+            background: white;
+            padding: 0.4rem 0.8rem;
+            border-radius: 6px;
+            color: var(--text-gray);
+            flex: 1;
+            text-align: center;
+        }
+
+        /* Impact Summary */
+        .impact-section {
+            background: white;
+            border-radius: 16px;
+            padding: 2rem;
+            box-shadow: var(--shadow);
+            margin-top: 2rem;
+        }
+
+        .impact-title {
+            font-size: 1.2rem;
+            color: var(--primary-green);
+            margin-bottom: 1.5rem;
+            font-weight: 700;
+        }
+
+        .impact-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1.5rem;
+        }
+
+        .impact-item {
+            text-align: center;
+            padding: 1.5rem;
+            background: linear-gradient(135deg, rgba(122, 184, 130, 0.05), rgba(245, 241, 232, 0.5));
+            border-radius: 12px;
+            border: 1.5px solid var(--light-gray);
+        }
+
+        .impact-value {
+            font-size: 2rem;
+            font-weight: 700;
+            color: var(--bright-green);
+            margin-bottom: 0.5rem;
+        }
+
+        .impact-label {
+            font-size: 0.9rem;
+            color: var(--text-gray);
+        }
+
+        .impact-unit {
+            font-size: 0.8rem;
+            color: var(--text-gray);
+            margin-top: 0.3rem;
+        }
+
+        /* Sustainability Details */
+        .details-section {
+            background: white;
+            border-radius: 16px;
+            padding: 2rem;
+            box-shadow: var(--shadow);
+            margin-top: 2rem;
+        }
+
+        .details-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 1.5rem;
+        }
+
+        .detail-item {
+            padding: 1.5rem;
+            background: linear-gradient(135deg, rgba(122, 184, 130, 0.05), rgba(245, 241, 232, 0.5));
+            border-left: 4px solid var(--accent-green);
+            border-radius: 8px;
+        }
+
+        .detail-label {
+            font-weight: 600;
+            color: var(--dark-text);
+            margin-bottom: 0.5rem;
+            display: flex;
+            align-items: center;
+            gap: 0.6rem;
+        }
+
+        .detail-value {
+            font-size: 0.95rem;
+            color: var(--text-gray);
+        }
+
+        /* Responsive */
+        @media (max-width: 1024px) {
+            .dashboard-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .product-card {
+                position: relative;
+                top: 0;
+            }
+
+            .container {
+                padding: 1.5rem;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .page-title {
+                flex-direction: column;
+                gap: 1rem;
+            }
+
+            .action-buttons {
+                width: 100%;
+            }
+
+            .btn-secondary {
+                flex: 1;
+            }
+
+            .breakdown-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .circular-progress {
+                width: 150px;
+                height: 150px;
+            }
+
+            .progress-number {
+                font-size: 2.5rem;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .header-container {
+                flex-direction: column;
+                gap: 1rem;
+                padding: 0 1rem;
+            }
+
+            .title-content h1 {
+                font-size: 1.5rem;
+            }
+
+            .container {
+                padding: 1rem;
+            }
+
+            .product-image {
+                font-size: 3rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Header -->
+    <header>
+        <div class="header-container">
+            <a href="#" class="logo">Re<span>Wear</span></a>
+            <div class="header-right">
+                <div class="breadcrumb">
+                    <a href="#">Products</a> / <span>Sustainability Score</span>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Container -->
+    <div class="container">
+        <!-- Page Title -->
+        <div class="page-title">
+            <div class="title-content">
+                <h1>Sustainability Score Report</h1>
+                <p>Detailed lifecycle impact analysis for your fashion item</p>
+            </div>
+            <div class="action-buttons">
+                <button class="btn-secondary">📥 Download Report</button>
+                <button class="btn-secondary">🔄 Compare Items</button>
+            </div>
+        </div>
+
+        <!-- Main Layout -->
+        <div class="dashboard-grid">
+            <!-- Product Card -->
+            <div class="product-card">
+                <div class="product-image">👔</div>
+                <div class="product-info">
+                    <h3>Vintage Cotton Shirt</h3>
+                    <div class="product-meta">
+                        <div class="meta-item">
+                            <span>Brand:</span>
+                            <strong>Organic Cotton Co.</strong>
+                        </div>
+                        <div class="meta-item">
+                            <span>Condition:</span>
+                            <strong>Excellent</strong>
+                        </div>
+                        <div class="meta-item">
+                            <span>Material:</span>
+                            <strong>100% Cotton</strong>
+                        </div>
+                        <div class="meta-item">
+                            <span>Year:</span>
+                            <strong>2020</strong>
+                        </div>
+                    </div>
+                    <div class="product-tags">
+                        <span class="tag">♻️ Organic</span>
+                        <span class="tag">🌱 Fair Trade</span>
+                        <span class="tag">♻️ Durable</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Score Section -->
+            <div class="score-section">
+                <!-- Main Score Card -->
+                <div class="main-score-card">
+                    <div class="score-header">
+                        <h2>Overall Eco Score</h2>
+                        <p>Comprehensive sustainability assessment based on 5 key metrics</p>
+                    </div>
+
+                    <div class="circular-progress-wrapper">
+                        <div class="circular-progress">
+                            <svg class="progress-circle" viewBox="0 0 150 150">
+                                <defs>
+                                    <linearGradient id="scoreGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+                                        <stop offset="0%" style="stop-color:#7ab882;stop-opacity:1" />
+                                        <stop offset="100%" style="stop-color:#52a572;stop-opacity:1" />
+                                    </linearGradient>
+                                </defs>
+                                <circle class="progress-bg" cx="75" cy="75" r="60"></circle>
+                                <circle class="progress-bar" cx="75" cy="75" r="60"></circle>
+                            </svg>
+                            <div class="progress-text">
+                                <div class="progress-number">82</div>
+                                <div class="progress-label">/ 100</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div style="text-align: center;">
+                        <span class="eco-badge">
+                            <span class="badge-icon">✓</span>
+                            Eco-Friendly Grade A
+                        </span>
+                    </div>
+
+                    <!-- Breakdown Section -->
+                    <div class="breakdown-section">
+                        <div class="breakdown-title">Score Breakdown</div>
+                        <div class="breakdown-grid">
+                            <!-- Fabric Score -->
+                            <div class="score-card">
+                                <div class="card-header">
+                                    <div class="card-title">
+                                        <span class="card-icon">🧵</span>
+                                        Fabric Score
+                                    </div>
+                                    <div class="card-score">92</div>
+                                </div>
+                                <div class="progress-bar-wrapper">
+                                    <div class="progress-label-top">
+                                        <span>Material Quality</span>
+                                        <span>92%</span>
+                                    </div>
+                                    <div class="bar-container">
+                                        <div class="bar-fill" style="width: 92%"></div>
+                                    </div>
+                                </div>
+                                <div class="card-description">
+                                    100% organic cotton with eco-friendly dyeing process. Excellent biodegradability.
+                                </div>
+                                <div class="metric-insights">
+                                    <div class="insight-item">Renewable ✓</div>
+                                    <div class="insight-item">Biodegradable ✓</div>
+                                </div>
+                            </div>
+
+                            <!-- Carbon Impact -->
+                            <div class="score-card">
+                                <div class="card-header">
+                                    <div class="card-title">
+                                        <span class="card-icon">☁️</span>
+                                        Carbon Impact
+                                    </div>
+                                    <div class="card-score">78</div>
+                                </div>
+                                <div class="progress-bar-wrapper">
+                                    <div class="progress-label-top">
+                                        <span>Emission Reduction</span>
+                                        <span>78%</span>
+                                    </div>
+                                    <div class="bar-container">
+                                        <div class="bar-fill" style="width: 78%"></div>
+                                    </div>
+                                </div>
+                                <div class="card-description">
+                                    Est. CO₂ saved: 4.2 kg vs. new production. Reduced manufacturing emissions.
+                                </div>
+                                <div class="metric-insights">
+                                    <div class="insight-item">4.2 kg CO₂ ↓</div>
+                                    <div class="insight-item">Local Ship</div>
+                                </div>
+                            </div>
+
+                            <!-- Water Usage -->
+                            <div class="score-card">
+                                <div class="card-header">
+                                    <div class="card-title">
+                                        <span class="card-icon">💧</span>
+                                        Water Usage
+                                    </div>
+                                    <div class="card-score">88</div>
+                                </div>
+                                <div class="progress-bar-wrapper">
+                                    <div class="progress-label-top">
+                                        <span>Water Saved</span>
+                                        <span>88%</span>
+                                    </div>
+                                    <div class="bar-container">
+                                        <div class="bar-fill" style="width: 88%"></div>
+                                    </div>
+                                </div>
+                                <div class="card-description">
+                                    Est. water saved: 2,800 L vs. new production. Critical for sustainable fashion.
+                                </div>
+                                <div class="metric-insights">
+                                    <div class="insight-item">2,800 L ↓</div>
+                                    <div class="insight-item">Critical</div>
+                                </div>
+                            </div>
+
+                            <!-- Durability Rating -->
+                            <div class="score-card">
+                                <div class="card-header">
+                                    <div class="card-title">
+                                        <span class="card-icon">💪</span>
+                                        Durability Rating
+                                    </div>
+                                    <div class="card-score">85</div>
+                                </div>
+                                <div class="progress-bar-wrapper">
+                                    <div class="progress-label-top">
+                                        <span>Longevity Score</span>
+                                        <span>85%</span>
+                                    </div>
+                                    <div class="bar-container">
+                                        <div class="bar-fill" style="width: 85%"></div>
+                                    </div>
+                                </div>
+                                <div class="card-description">
+                                    High-quality construction. Est. lifespan: 8-10 years. Excellent condition maintained.
+                                </div>
+                                <div class="metric-insights">
+                                    <div class="insight-item">8-10 Years</div>
+                                    <div class="insight-item">Quality ✓</div>
+                                </div>
+                            </div>
+
+                            <!-- Supply Chain Transparency -->
+                            <div class="score-card">
+                                <div class="card-header">
+                                    <div class="card-title">
+                                        <span class="card-icon">🔍</span>
+                                        Supply Chain
+                                    </div>
+                                    <div class="card-score">80</div>
+                                </div>
+                                <div class="progress-bar-wrapper">
+                                    <div class="progress-label-top">
+                                        <span>Transparency</span>
+                                        <span>80%</span>
+                                    </div>
+                                    <div class="bar-container">
+                                        <div class="bar-fill" style="width: 80%"></div>
+                                    </div>
+                                </div>
+                                <div class="card-description">
+                                    Fair-trade verified. Ethical manufacturing. Transparent supplier network documented.
+                                </div>
+                                <div class="metric-insights">
+                                    <div class="insight-item">Fair Trade ✓</div>
+                                    <div class="insight-item">Verified</div>
+                                </div>
+                            </div>
+
+                            <!-- Price Value -->
+                            <div class="score-card">
+                                <div class="card-header">
+                                    <div class="card-title">
+                                        <span class="card-icon">💰</span>
+                                        Price Value
+                                    </div>
+                                    <div class="card-score">91</div>
+                                </div>
+                                <div class="progress-bar-wrapper">
+                                    <div class="progress-label-top">
+                                        <span>Cost Efficiency</span>
+                                        <span>91%</span>
+                                    </div>
+                                    <div class="bar-container">
+                                        <div class="bar-fill" style="width: 91%"></div>
+                                    </div>
+                                </div>
+                                <div class="card-description">
+                                    Exceptional value: $45 for high-quality sustainable piece. 65% off retail equivalent.
+                                </div>
+                                <div class="metric-insights">
+                                    <div class="insight-item">-65% Price</div>
+                                    <div class="insight-item">Great Deal</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Impact Summary -->
+                <div class="impact-section">
+                    <div class="impact-title">Environmental Impact Comparison</div>
+                    <div class="impact-grid">
+                        <div class="impact-item">
+                            <div class="impact-value">4.2 kg</div>
+                            <div class="impact-label">CO₂ Emissions</div>
+                            <div class="impact-unit">Prevented vs. New</div>
+                        </div>
+                        <div class="impact-item">
+                            <div class="impact-value">2,800 L</div>
+                            <div class="impact-label">Water Saved</div>
+                            <div class="impact-unit">vs. New Production</div>
+                        </div>
+                        <div class="impact-item">
+                            <div class="impact-value">89%</div>
+                            <div class="impact-label">Textile Waste</div>
+                            <div class="impact-unit">Reduction</div>
+                        </div>
+                        <div class="impact-item">
+                            <div class="impact-value">8-10 yrs</div>
+                            <div class="impact-label">Estimated Lifespan</div>
+                            <div class="impact-unit">Extended Utility</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Sustainability Details -->
+                <div class="details-section">
+                    <div class="impact-title">Key Sustainability Features</div>
+                    <div class="details-grid">
+                        <div class="detail-item">
+                            <div class="detail-label">🌱 Material</div>
+                            <div class="detail-value">Certified organic cotton with minimal pesticide use</div>
+                        </div>
+                        <div class="detail-item">
+                            <div class="detail-label">🏭 Production</div>
+                            <div class="detail-value">Fair-trade certified facilities with ethical labor practices</div>
+                        </div>
+                        <div class="detail-item">
+                            <div class="detail-label">🚚 Shipping</div>
+                            <div class="detail-value">Carbon-neutral delivery using consolidated shipments</div>
+                        </div>
+                        <div class="detail-item">
+                            <div class="detail-label">♻️ Packaging</div>
+                            <div class="detail-value">100% recyclable and biodegradable packaging materials</div>
+                        </div>
+                        <div class="detail-item">
+                            <div class="detail-label">🔄 Lifecycle</div>
+                            <div class="detail-value">Second-hand category = maximum sustainability benefit</div>
+                        </div>
+                        <div class="detail-item">
+                            <div class="detail-label">📊 Transparency</div>
+                            <div class="detail-value">Full supply chain documentation and certifications available</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Animate progress bars on page load
+        window.addEventListener('load', () => {
+            const barFills = document.querySelectorAll('.bar-fill');
+            barFills.forEach(bar => {
+                const width = bar.style.width;
+                bar.style.width = '0';
+                setTimeout(() => {
+                    bar.style.width = width;
+                }, 100);
+            });
+        });
+
+        // Add hover effects to cards
+        document.querySelectorAll('.score-card').forEach(card => {
+            card.addEventListener('mouseenter', function() {
+                this.style.transform = 'translateY(-4px)';
+            });
+            card.addEventListener('mouseleave', function() {
+                this.style.transform = 'translateY(0)';
+            });
+        });
+
+        // Smooth scroll for navigation
+        document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+            anchor.addEventListener('click', function (e) {
+                e.preventDefault();
+                const target = document.querySelector(this.getAttribute('href'));
+                if (target) {
+                    target.scrollIntoView({ behavior: 'smooth' });
+                }
+            });
+        });
+
+        // Button interactions
+        document.querySelectorAll('.btn-secondary').forEach(btn => {
+            btn.addEventListener('click', function(e) {
+                e.preventDefault();
+                const action = this.textContent.includes('Download') ? 'downloading' : 'comparing';
+                const originalText = this.textContent;
+                this.textContent = action === 'downloading' ? '✓ Downloaded!' : '✓ Opening...';
+                setTimeout(() => {
+                    this.textContent = originalText;
+                }, 2000);
+            });
+        });
+    </script>
+</body>
+</html>

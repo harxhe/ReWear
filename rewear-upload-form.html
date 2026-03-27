@@ -1,0 +1,859 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sell an Item - ReWear Marketplace</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --primary-green: #2d5a3d;
+            --light-green: #4a7c59;
+            --accent-green: #7ab882;
+            --beige: #f5f1e8;
+            --light-beige: #faf8f3;
+            --dark-text: #1a1a1a;
+            --text-gray: #666666;
+            --light-gray: #e8e6e1;
+            --shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+            --eco-gold: #d4a574;
+            --border-color: #ddd9d0;
+            --success-green: #52a572;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: var(--light-beige);
+            color: var(--dark-text);
+            line-height: 1.6;
+        }
+
+        /* Header/Navigation */
+        header {
+            background-color: white;
+            padding: 1.2rem 0;
+            box-shadow: var(--shadow);
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+
+        .header-container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 0 2rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .logo {
+            font-size: 1.8rem;
+            font-weight: 700;
+            color: var(--primary-green);
+            text-decoration: none;
+            letter-spacing: 2px;
+        }
+
+        .logo span {
+            color: var(--accent-green);
+        }
+
+        .nav-right {
+            display: flex;
+            gap: 2rem;
+            align-items: center;
+        }
+
+        .nav-link {
+            color: var(--dark-text);
+            text-decoration: none;
+            font-weight: 500;
+            font-size: 0.95rem;
+            transition: color 0.3s ease;
+        }
+
+        .nav-link:hover {
+            color: var(--light-green);
+        }
+
+        .user-menu {
+            display: flex;
+            align-items: center;
+            gap: 0.8rem;
+            color: var(--text-gray);
+            font-size: 1.2rem;
+        }
+
+        /* Main Container */
+        .main-container {
+            max-width: 900px;
+            margin: 3rem auto;
+            padding: 0 2rem;
+        }
+
+        /* Page Title Section */
+        .page-header {
+            margin-bottom: 2.5rem;
+        }
+
+        .page-header h1 {
+            font-size: 2.2rem;
+            color: var(--primary-green);
+            margin-bottom: 0.5rem;
+            font-weight: 700;
+        }
+
+        .page-header p {
+            color: var(--text-gray);
+            font-size: 1rem;
+        }
+
+        /* Form Card */
+        .form-card {
+            background: white;
+            border-radius: 16px;
+            padding: 2.5rem;
+            box-shadow: var(--shadow);
+        }
+
+        /* Form Section */
+        .form-section {
+            margin-bottom: 2.5rem;
+        }
+
+        .form-section-title {
+            font-size: 1.1rem;
+            font-weight: 700;
+            color: var(--primary-green);
+            margin-bottom: 1.5rem;
+            padding-bottom: 0.8rem;
+            border-bottom: 2px solid var(--light-gray);
+            display: flex;
+            align-items: center;
+            gap: 0.6rem;
+        }
+
+        .section-icon {
+            font-size: 1.4rem;
+        }
+
+        /* Form Grid */
+        .form-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 1.5rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .form-grid.full {
+            grid-template-columns: 1fr;
+        }
+
+        /* Form Group */
+        .form-group {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .form-group label {
+            font-weight: 600;
+            color: var(--dark-text);
+            margin-bottom: 0.6rem;
+            font-size: 0.95rem;
+            display: flex;
+            align-items: center;
+            gap: 0.4rem;
+        }
+
+        .required {
+            color: #e74c3c;
+            font-weight: 700;
+        }
+
+        .form-group input,
+        .form-group select,
+        .form-group textarea {
+            padding: 0.9rem 1rem;
+            border: 1.5px solid var(--border-color);
+            border-radius: 8px;
+            font-size: 0.95rem;
+            font-family: inherit;
+            transition: all 0.3s ease;
+            background-color: white;
+        }
+
+        .form-group input:focus,
+        .form-group select:focus,
+        .form-group textarea:focus {
+            outline: none;
+            border-color: var(--light-green);
+            box-shadow: 0 0 0 3px rgba(122, 184, 130, 0.1);
+            background-color: rgba(245, 241, 232, 0.5);
+        }
+
+        .form-group textarea {
+            resize: vertical;
+            min-height: 100px;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        .form-hint {
+            font-size: 0.8rem;
+            color: var(--text-gray);
+            margin-top: 0.4rem;
+        }
+
+        /* Image Upload Section */
+        .image-upload-area {
+            border: 2px dashed var(--accent-green);
+            border-radius: 12px;
+            padding: 2rem;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            background-color: rgba(122, 184, 130, 0.05);
+        }
+
+        .image-upload-area:hover {
+            border-color: var(--light-green);
+            background-color: rgba(122, 184, 130, 0.08);
+        }
+
+        .image-upload-area.active {
+            border-color: var(--light-green);
+            background-color: rgba(122, 184, 130, 0.12);
+        }
+
+        .upload-icon {
+            font-size: 3rem;
+            margin-bottom: 1rem;
+        }
+
+        .upload-text {
+            color: var(--dark-text);
+            font-weight: 600;
+            margin-bottom: 0.4rem;
+        }
+
+        .upload-hint {
+            color: var(--text-gray);
+            font-size: 0.9rem;
+        }
+
+        .file-input {
+            display: none;
+        }
+
+        .image-preview-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
+            gap: 1rem;
+            margin-top: 1.5rem;
+        }
+
+        .image-preview {
+            position: relative;
+            width: 100%;
+            padding-bottom: 100%;
+            background: var(--light-gray);
+            border-radius: 8px;
+            overflow: hidden;
+        }
+
+        .image-preview img {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .preview-remove {
+            position: absolute;
+            top: 4px;
+            right: 4px;
+            background: rgba(0, 0, 0, 0.6);
+            color: white;
+            border: none;
+            border-radius: 4px;
+            padding: 0.3rem 0.6rem;
+            cursor: pointer;
+            font-size: 0.85rem;
+            transition: background 0.3s ease;
+        }
+
+        .preview-remove:hover {
+            background: rgba(0, 0, 0, 0.8);
+        }
+
+        /* Sustainability Factors */
+        .sustainability-options {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1rem;
+        }
+
+        .checkbox-group {
+            display: flex;
+            align-items: center;
+            padding: 1rem;
+            border: 1.5px solid var(--border-color);
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .checkbox-group:hover {
+            border-color: var(--light-green);
+            background-color: rgba(245, 241, 232, 0.5);
+        }
+
+        .checkbox-group input[type="checkbox"] {
+            width: 20px;
+            height: 20px;
+            cursor: pointer;
+            margin-right: 0.8rem;
+            accent-color: var(--light-green);
+        }
+
+        .checkbox-label {
+            font-weight: 500;
+            cursor: pointer;
+            flex: 1;
+        }
+
+        /* Condition Badge */
+        .radio-group {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+            gap: 1rem;
+        }
+
+        .radio-option {
+            display: flex;
+            align-items: center;
+            padding: 1rem;
+            border: 1.5px solid var(--border-color);
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .radio-option:hover {
+            border-color: var(--light-green);
+            background-color: rgba(245, 241, 232, 0.5);
+        }
+
+        .radio-option input[type="radio"] {
+            width: 18px;
+            height: 18px;
+            cursor: pointer;
+            margin-right: 0.8rem;
+            accent-color: var(--light-green);
+        }
+
+        .radio-label {
+            font-weight: 500;
+            cursor: pointer;
+        }
+
+        /* Form Actions */
+        .form-actions {
+            display: flex;
+            gap: 1rem;
+            margin-top: 2.5rem;
+            padding-top: 2rem;
+            border-top: 2px solid var(--light-gray);
+        }
+
+        .btn {
+            padding: 1rem 1.8rem;
+            border: none;
+            border-radius: 8px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.6rem;
+        }
+
+        .btn-submit {
+            background-color: var(--accent-green);
+            color: white;
+            flex: 1;
+        }
+
+        .btn-submit:hover {
+            background-color: var(--light-green);
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(122, 184, 130, 0.3);
+        }
+
+        .btn-submit:active {
+            transform: translateY(0);
+        }
+
+        .btn-cancel {
+            background-color: var(--light-gray);
+            color: var(--dark-text);
+            flex: 1;
+        }
+
+        .btn-cancel:hover {
+            background-color: var(--border-color);
+        }
+
+        /* Info Box */
+        .info-box {
+            background-color: rgba(122, 184, 130, 0.1);
+            border-left: 4px solid var(--accent-green);
+            padding: 1rem;
+            border-radius: 6px;
+            margin-bottom: 1.5rem;
+            color: var(--dark-text);
+            font-size: 0.95rem;
+        }
+
+        .info-icon {
+            margin-right: 0.6rem;
+        }
+
+        /* Success Message */
+        .success-message {
+            display: none;
+            background-color: #d4edda;
+            color: #155724;
+            padding: 1rem;
+            border-radius: 8px;
+            margin-bottom: 1.5rem;
+            border-left: 4px solid var(--success-green);
+        }
+
+        .success-message.show {
+            display: block;
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .main-container {
+                padding: 0 1rem;
+                margin: 2rem auto;
+            }
+
+            .form-card {
+                padding: 1.5rem;
+            }
+
+            .form-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .page-header h1 {
+                font-size: 1.8rem;
+            }
+
+            .form-actions {
+                flex-direction: column;
+            }
+
+            .btn {
+                width: 100%;
+            }
+
+            .sustainability-options,
+            .radio-group {
+                grid-template-columns: 1fr;
+            }
+
+            .header-container {
+                padding: 0 1rem;
+            }
+
+            .nav-right {
+                gap: 1rem;
+            }
+
+            .logo {
+                font-size: 1.4rem;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .form-card {
+                padding: 1rem;
+            }
+
+            .page-header h1 {
+                font-size: 1.5rem;
+            }
+
+            .form-grid {
+                gap: 1rem;
+            }
+
+            .nav-link {
+                display: none;
+            }
+
+            .image-preview-grid {
+                grid-template-columns: repeat(auto-fill, minmax(80px, 1fr));
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Header/Navigation -->
+    <header>
+        <div class="header-container">
+            <a href="#" class="logo">Re<span>Wear</span></a>
+            <div class="nav-right">
+                <a href="#" class="nav-link">Marketplace</a>
+                <a href="#" class="nav-link">Sell</a>
+                <a href="#" class="nav-link">Help</a>
+                <div class="user-menu">
+                    <span>👤</span>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Container -->
+    <div class="main-container">
+        <!-- Page Header -->
+        <div class="page-header">
+            <h1>List Your Item</h1>
+            <p>Share your pre-loved fashion piece with our sustainable community</p>
+        </div>
+
+        <!-- Success Message -->
+        <div class="success-message" id="successMessage">
+            <span class="info-icon">✓</span>
+            Your item has been listed successfully!
+        </div>
+
+        <!-- Form Card -->
+        <form class="form-card" id="uploadForm">
+
+            <!-- Product Information Section -->
+            <div class="form-section">
+                <div class="form-section-title">
+                    <span class="section-icon">📦</span>
+                    Product Information
+                </div>
+
+                <div class="info-box">
+                    <span class="info-icon">ℹ️</span>
+                    Be detailed and honest about your item's condition to attract serious buyers.
+                </div>
+
+                <div class="form-grid">
+                    <div class="form-group">
+                        <label for="productName">
+                            Product Name
+                            <span class="required">*</span>
+                        </label>
+                        <input type="text" id="productName" name="productName" 
+                               placeholder="e.g., Vintage Cotton Linen Dress" required>
+                        <span class="form-hint">Be specific about style, type, and distinctive features</span>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="brand">
+                            Brand
+                            <span class="required">*</span>
+                        </label>
+                        <input type="text" id="brand" name="brand" 
+                               placeholder="e.g., Patagonia, Levi's, Zara" required>
+                        <span class="form-hint">Leave blank if unknown</span>
+                    </div>
+                </div>
+
+                <div class="form-grid">
+                    <div class="form-group">
+                        <label for="fabricType">
+                            Fabric Type
+                            <span class="required">*</span>
+                        </label>
+                        <select id="fabricType" name="fabricType" required>
+                            <option value="">Select fabric type...</option>
+                            <option value="cotton">100% Cotton</option>
+                            <option value="polyester">100% Polyester</option>
+                            <option value="linen">100% Linen</option>
+                            <option value="wool">100% Wool</option>
+                            <option value="silk">100% Silk</option>
+                            <option value="blend-cotton">Cotton Blend</option>
+                            <option value="blend-synthetic">Synthetic Blend</option>
+                            <option value="blend-mixed">Mixed Blend</option>
+                            <option value="other">Other</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="price">
+                            Price (USD)
+                            <span class="required">*</span>
+                        </label>
+                        <input type="number" id="price" name="price" 
+                               min="0" step="0.01" placeholder="0.00" required>
+                        <span class="form-hint">Typical savings: 50-70% off retail</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Condition Section -->
+            <div class="form-section">
+                <div class="form-section-title">
+                    <span class="section-icon">✨</span>
+                    Item Condition
+                </div>
+
+                <div class="radio-group">
+                    <label class="radio-option">
+                        <input type="radio" name="condition" value="like-new" required>
+                        <span class="radio-label">Like New</span>
+                    </label>
+                    <label class="radio-option">
+                        <input type="radio" name="condition" value="excellent" required>
+                        <span class="radio-label">Excellent</span>
+                    </label>
+                    <label class="radio-option">
+                        <input type="radio" name="condition" value="good" required>
+                        <span class="radio-label">Good</span>
+                    </label>
+                    <label class="radio-option">
+                        <input type="radio" name="condition" value="fair" required>
+                        <span class="radio-label">Fair</span>
+                    </label>
+                </div>
+
+                <div class="form-grid full" style="margin-top: 1.5rem;">
+                    <div class="form-group">
+                        <label for="conditionNotes">
+                            Condition Notes
+                            <span>(optional)</span>
+                        </label>
+                        <textarea id="conditionNotes" name="conditionNotes" 
+                                  placeholder="Describe any wear, stains, repairs, or other details...">
+                        </textarea>
+                        <span class="form-hint">Be thorough - this builds buyer trust</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Sustainability Section -->
+            <div class="form-section">
+                <div class="form-section-title">
+                    <span class="section-icon">🌿</span>
+                    Sustainability Factors
+                </div>
+
+                <div class="sustainability-options">
+                    <label class="checkbox-group">
+                        <input type="checkbox" name="sustainability" value="organic">
+                        <span class="checkbox-label">Organic Material</span>
+                    </label>
+                    <label class="checkbox-group">
+                        <input type="checkbox" name="sustainability" value="eco-dye">
+                        <span class="checkbox-label">Eco-Dyed</span>
+                    </label>
+                    <label class="checkbox-group">
+                        <input type="checkbox" name="sustainability" value="durable">
+                        <span class="checkbox-label">Durable Construction</span>
+                    </label>
+                    <label class="checkbox-group">
+                        <input type="checkbox" name="sustainability" value="local-made">
+                        <span class="checkbox-label">Locally Made</span>
+                    </label>
+                    <label class="checkbox-group">
+                        <input type="checkbox" name="sustainability" value="fair-trade">
+                        <span class="checkbox-label">Fair Trade</span>
+                    </label>
+                    <label class="checkbox-group">
+                        <input type="checkbox" name="sustainability" value="vegan">
+                        <span class="checkbox-label">Vegan/Cruelty-Free</span>
+                    </label>
+                </div>
+            </div>
+
+            <!-- Image Upload Section -->
+            <div class="form-section">
+                <div class="form-section-title">
+                    <span class="section-icon">📸</span>
+                    Upload Photos
+                </div>
+
+                <div class="info-box">
+                    <span class="info-icon">💡</span>
+                    High-quality photos dramatically increase sales. Show front, back, and detail shots.
+                </div>
+
+                <div class="image-upload-area" id="uploadArea" onclick="document.getElementById('fileInput').click()">
+                    <div class="upload-icon">📷</div>
+                    <div class="upload-text">Click to upload or drag and drop</div>
+                    <div class="upload-hint">PNG, JPG, GIF up to 10MB each (max 8 images)</div>
+                    <input type="file" id="fileInput" class="file-input" multiple accept="image/*">
+                </div>
+
+                <div class="image-preview-grid" id="previewGrid"></div>
+            </div>
+
+            <!-- Description Section -->
+            <div class="form-section">
+                <div class="form-section-title">
+                    <span class="section-icon">📝</span>
+                    Description
+                </div>
+
+                <div class="form-grid full">
+                    <div class="form-group">
+                        <label for="description">
+                            Item Description
+                            <span class="required">*</span>
+                        </label>
+                        <textarea id="description" name="description" 
+                                  placeholder="Provide a detailed description of your item. Include style, size, fit, color, and any other relevant details that would help a buyer..."
+                                  required></textarea>
+                        <span class="form-hint">Minimum 50 characters | Maximum 2000 characters</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Form Actions -->
+            <div class="form-actions">
+                <button type="reset" class="btn btn-cancel">Clear Form</button>
+                <button type="submit" class="btn btn-submit">
+                    <span>✓</span>
+                    <span>List Item</span>
+                </button>
+            </div>
+        </form>
+    </div>
+
+    <script>
+        const form = document.getElementById('uploadForm');
+        const uploadArea = document.getElementById('uploadArea');
+        const fileInput = document.getElementById('fileInput');
+        const previewGrid = document.getElementById('previewGrid');
+        const successMessage = document.getElementById('successMessage');
+        let selectedFiles = [];
+
+        // Image upload handling
+        uploadArea.addEventListener('dragover', (e) => {
+            e.preventDefault();
+            uploadArea.classList.add('active');
+        });
+
+        uploadArea.addEventListener('dragleave', () => {
+            uploadArea.classList.remove('active');
+        });
+
+        uploadArea.addEventListener('drop', (e) => {
+            e.preventDefault();
+            uploadArea.classList.remove('active');
+            const files = e.dataTransfer.files;
+            handleFiles(files);
+        });
+
+        fileInput.addEventListener('change', (e) => {
+            handleFiles(e.target.files);
+        });
+
+        function handleFiles(files) {
+            const maxFiles = 8;
+            if (selectedFiles.length + files.length > maxFiles) {
+                alert(`Maximum ${maxFiles} images allowed`);
+                return;
+            }
+
+            for (let file of files) {
+                if (file.type.startsWith('image/')) {
+                    selectedFiles.push(file);
+                    const reader = new FileReader();
+                    reader.onload = (e) => {
+                        addPreview(e.target.result, selectedFiles.length - 1);
+                    };
+                    reader.readAsDataURL(file);
+                }
+            }
+        }
+
+        function addPreview(imageSrc, index) {
+            const preview = document.createElement('div');
+            preview.className = 'image-preview';
+            preview.innerHTML = `
+                <img src="${imageSrc}" alt="Preview ${index + 1}">
+                <button type="button" class="preview-remove" data-index="${index}">Remove</button>
+            `;
+
+            preview.querySelector('.preview-remove').addEventListener('click', (e) => {
+                e.preventDefault();
+                selectedFiles.splice(index, 1);
+                preview.remove();
+            });
+
+            previewGrid.appendChild(preview);
+        }
+
+        // Form submission
+        form.addEventListener('submit', (e) => {
+            e.preventDefault();
+
+            if (selectedFiles.length === 0) {
+                alert('Please upload at least one image');
+                return;
+            }
+
+            // Simulate form submission
+            const formData = new FormData(form);
+            formData.append('images', selectedFiles.length);
+
+            console.log('Form submitted:', {
+                productName: formData.get('productName'),
+                brand: formData.get('brand'),
+                fabricType: formData.get('fabricType'),
+                condition: formData.get('condition'),
+                price: formData.get('price'),
+                images: selectedFiles.length,
+                sustainability: formData.getAll('sustainability')
+            });
+
+            // Show success message
+            successMessage.classList.add('show');
+            form.reset();
+            previewGrid.innerHTML = '';
+            selectedFiles = [];
+
+            // Hide success message after 5 seconds
+            setTimeout(() => {
+                successMessage.classList.remove('show');
+            }, 5000);
+
+            // Scroll to top
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        });
+
+        // Form validation feedback
+        const inputs = form.querySelectorAll('input, textarea, select');
+        inputs.forEach(input => {
+            input.addEventListener('blur', function() {
+                if (this.hasAttribute('required') && !this.value) {
+                    this.style.borderColor = '#e74c3c';
+                } else {
+                    this.style.borderColor = '';
+                }
+            });
+        });
+    </script>
+</body>
+</html>
