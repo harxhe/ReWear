@@ -2,12 +2,16 @@ import cors from 'cors';
 import express from 'express';
 
 import { env } from './config/env.js';
+import { errorHandler } from './middleware/error-handler.js';
+import { apiRouter } from './routes/index.js';
 
 const app = express();
 const port = env.port;
 
 app.use(cors());
 app.use(express.json());
+
+app.use('/api', apiRouter);
 
 app.get('/api/health', (_request, response) => {
   response.json({
@@ -16,6 +20,8 @@ app.get('/api/health', (_request, response) => {
     timestamp: new Date().toISOString(),
   });
 });
+
+app.use(errorHandler);
 
 app.listen(port, () => {
   console.log(`ReWear API listening on port ${port}`);
