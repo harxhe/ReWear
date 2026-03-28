@@ -1,10 +1,12 @@
-import { useQuery } from '@tanstack/react-query';
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { Filter, Leaf, Sparkles } from 'lucide-react';
 import { useMemo, useState } from 'react';
 
+import { ProductDetailSheet } from '../components/product-detail-sheet.jsx';
 import { ProductCard } from '../components/product-card.jsx';
 import { SectionHeading } from '../components/section-heading.jsx';
-import { apiRequest } from '../lib/api.js';
+import { apiRequest, authHeaders } from '../lib/api.js';
+import { useAuth } from '../state/auth-context.js';
 
 const defaultFilters = {
   category: '',
@@ -13,7 +15,10 @@ const defaultFilters = {
 };
 
 export function MarketplacePage() {
+  const queryClient = useQueryClient();
+  const { isAuthenticated, refreshUser, token, user } = useAuth();
   const [filters, setFilters] = useState(defaultFilters);
+  const [selectedProductId, setSelectedProductId] = useState(null);
 
   const materialsQuery = useQuery({
     queryFn: () => apiRequest('/materials'),
@@ -36,6 +41,26 @@ export function MarketplacePage() {
   });
 
   const categories = useMemo(() => ['Tops', 'Outerwear', 'Dresses', 'Denim', 'Accessories'], []);
+
+  const selectedProductQuery = useQuery({
+    enabled: Boolean(selectedProductId),
+    queryFn: () => apiRequest(`/products/${selectedProductId}`),
+    queryKey: ['product-detail', selectedProductId],
+  });
+
+  const purchaseMutation = useMutation({
+    mutationFn: (productId) => apiRequest('/purchases', {
+      body: JSON.stringify({ productId }),
+      headers: authHeaders(token),
+      method: 'POST',
+    }),
+    onSuccess: async () => {
+      await refreshUser();
+      await queryClient.invalidateQueries({ queryKey: ['products'] });
+      await queryClient.invalidateQueries({ queryKey: ['product-detail', selectedProductId] });
+      setSelectedProductId(null);
+    },
+  });
 
   return (
     <div className="space-y-8">
@@ -108,10 +133,20 @@ export function MarketplacePage() {
 
         <div className="grid gap-6 lg:grid-cols-2 xl:grid-cols-3">
           {(productsQuery.data?.products || []).map((product) => (
-            <ProductCard key={product.id} product={product} />
+            <button key={product.id} type="button" onClick={() => setSelectedProductId(product.id)} className="text-left">
+              <ProductCard product={product} />
+            </button>
           ))}
         </div>
       </section>
+
+      <ProductDetailSheet
+        canBuy={Boolean(isAuthenticated && selectedProductQuery.data?.product?.seller.id !== user?.id && selectedProductQuery.data?.product?.status === 'available')}
+        isBuying={purchaseMutation.isPending}
+        onBuy={(productId) => purchaseMutation.mutate(productId)}
+        onClose={() => setSelectedProductId(null)}
+        product={selectedProductQuery.data?.product}
+      />
     </div>
   );
 }

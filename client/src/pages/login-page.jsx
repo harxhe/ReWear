@@ -85,8 +85,49 @@ export function LoginPage() {
             {authMutation.isPending ? 'Working...' : mode === 'login' ? 'Enter the marketplace' : 'Create my account'}
           </button>
         </form>
+
+        <div className="mt-8 rounded-[1.5rem] border border-stone-300/60 bg-[#faf6f0] p-5">
+          <p className="text-sm font-semibold uppercase tracking-[0.25em] text-[#4e7f74]">Demo accounts</p>
+          <div className="mt-4 space-y-3 text-sm text-stone-700">
+            <DemoAccountCard
+              email="seller@rewear.demo"
+              helper="Use this account to create listings"
+              onFill={() => {
+                setMode('login');
+                setFormState({ email: 'seller@rewear.demo', fullName: '', password: 'demo12345' });
+              }}
+              title="Seller"
+            />
+            <DemoAccountCard
+              email="buyer@rewear.demo"
+              helper="Use this account to purchase and grow the dashboard totals"
+              onFill={() => {
+                setMode('login');
+                setFormState({ email: 'buyer@rewear.demo', fullName: '', password: 'demo12345' });
+              }}
+              title="Buyer"
+            />
+          </div>
+        </div>
       </div>
     </section>
+  );
+}
+
+function DemoAccountCard({ email, helper, onFill, title }) {
+  return (
+    <div className="rounded-2xl border border-stone-200 bg-white px-4 py-3">
+      <div className="flex items-center justify-between gap-3">
+        <div>
+          <p className="font-semibold text-stone-900">{title}</p>
+          <p className="text-stone-600">{email}</p>
+        </div>
+        <button type="button" onClick={onFill} className="rounded-full bg-stone-900 px-3 py-2 text-xs font-semibold text-white">
+          Fill form
+        </button>
+      </div>
+      <p className="mt-2 text-xs text-stone-500">{helper}</p>
+    </div>
   );
 }
 

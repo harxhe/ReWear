@@ -6,7 +6,7 @@ import { useAuth } from '../state/auth-context.js';
 
 export function DashboardPage() {
   const queryClient = useQueryClient();
-  const { token } = useAuth();
+  const { refreshUser, token, user } = useAuth();
 
   const dashboardQuery = useQuery({
     queryFn: () => apiRequest('/users/me/dashboard', {
@@ -27,8 +27,10 @@ export function DashboardPage() {
       method: 'POST',
     }),
     onSuccess: () => {
+      refreshUser();
       queryClient.invalidateQueries({ queryKey: ['dashboard', token] });
       queryClient.invalidateQueries({ queryKey: ['available-products'] });
+      queryClient.invalidateQueries({ queryKey: ['products'] });
     },
   });
 
@@ -104,7 +106,7 @@ export function DashboardPage() {
         <p className="mt-3 text-stone-600">This panel helps verify the course flow end-to-end: available products, buyer purchase, and dashboard totals increasing immediately.</p>
 
         <div className="mt-6 grid gap-4 lg:grid-cols-2">
-          {(productsQuery.data?.products || []).map((product) => (
+          {(productsQuery.data?.products || []).filter((product) => product.seller.id !== user?.id).map((product) => (
             <div key={product.id} className="rounded-[1.5rem] border border-stone-300/60 bg-[#faf6f0] p-4">
               <div className="flex items-start justify-between gap-4">
                 <div>
