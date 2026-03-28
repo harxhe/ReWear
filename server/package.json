@@ -12,7 +12,8 @@
     "test": "node --test",
     "db:setup": "node scripts/run-sql-file.js db/schema.sql",
     "db:seed": "node scripts/run-sql-file.js db/seed.sql",
-    "db:reset": "node scripts/reset-db.js"
+    "db:reset": "node scripts/reset-db.js",
+    "db:seed-demo": "node scripts/seed-demo.js"
   },
   "keywords": [],
   "author": "",

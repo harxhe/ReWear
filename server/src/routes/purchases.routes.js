@@ -1,6 +1,7 @@
 import { Router } from 'express';
 
 import { query } from '../db/query.js';
+import { withTransaction } from '../db/transaction.js';
 import { asyncHandler } from '../lib/async-handler.js';
 import { requireAuth } from '../lib/auth.js';
 import { HttpError } from '../lib/http-error.js';
@@ -38,51 +39,79 @@ purchasesRouter.post('/', requireAuth, asyncHandler(async (request, response) =>
     throw new HttpError(400, 'You cannot purchase your own listing.');
   }
 
-  const purchaseResult = await query(
-    `
-      INSERT INTO purchases (buyer_id, product_id, purchase_price, water_saved_liters, co2_diverted_kg)
-      VALUES ($1, $2, $3, $4, $5)
-      RETURNING id, purchased_at
-    `,
-    [
-      request.auth.userId,
-      product.id,
-      product.price,
-      product.water_saved_liters,
-      product.co2_diverted_kg,
-    ],
-  );
+  const purchaseResult = await withTransaction(async (db) => {
+    const lockedProductResult = await db.query(
+      `
+        SELECT id, seller_id, price, status, water_saved_liters, co2_diverted_kg
+        FROM products
+        WHERE id = $1
+        FOR UPDATE
+      `,
+      [productId],
+    );
 
-  await query('UPDATE products SET status = $1, updated_at = NOW() WHERE id = $2', ['sold', product.id]);
+    const lockedProduct = lockedProductResult.rows[0];
 
-  await query(
-    `
-      UPDATE users
-      SET
-        total_water_saved_liters = (
-          SELECT COALESCE(SUM(water_saved_liters), 0)
-          FROM purchases
-          WHERE buyer_id = $1
-        ),
-        total_co2_diverted_kg = (
-          SELECT COALESCE(SUM(co2_diverted_kg), 0)
-          FROM purchases
-          WHERE buyer_id = $1
-        ),
-        updated_at = NOW()
-      WHERE id = $1
-    `,
-    [request.auth.userId],
-  );
+    if (!lockedProduct) {
+      throw new HttpError(404, 'Product was not found.');
+    }
 
-  await syncUserBadges(request.auth.userId);
+    if (lockedProduct.status !== 'available') {
+      throw new HttpError(409, 'This product is no longer available.');
+    }
+
+    if (Number(lockedProduct.seller_id) === request.auth.userId) {
+      throw new HttpError(400, 'You cannot purchase your own listing.');
+    }
+
+    const insertedPurchaseResult = await db.query(
+      `
+        INSERT INTO purchases (buyer_id, product_id, purchase_price, water_saved_liters, co2_diverted_kg)
+        VALUES ($1, $2, $3, $4, $5)
+        RETURNING id, purchased_at
+      `,
+      [
+        request.auth.userId,
+        lockedProduct.id,
+        lockedProduct.price,
+        lockedProduct.water_saved_liters,
+        lockedProduct.co2_diverted_kg,
+      ],
+    );
+
+    await db.query('UPDATE products SET status = $1, updated_at = NOW() WHERE id = $2', ['sold', lockedProduct.id]);
+
+    await db.query(
+      `
+        UPDATE users
+        SET
+          total_water_saved_liters = (
+            SELECT COALESCE(SUM(water_saved_liters), 0)
+            FROM purchases
+            WHERE buyer_id = $1
+          ),
+          total_co2_diverted_kg = (
+            SELECT COALESCE(SUM(co2_diverted_kg), 0)
+            FROM purchases
+            WHERE buyer_id = $1
+          ),
+          updated_at = NOW()
+        WHERE id = $1
+      `,
+      [request.auth.userId],
+    );
+
+    await syncUserBadges(request.auth.userId, db);
+
+    return {
+      id: insertedPurchaseResult.rows[0].id,
+      productId: lockedProduct.id,
+      purchasedAt: insertedPurchaseResult.rows[0].purchased_at,
+    };
+  });
 
   response.status(201).json({
-    purchase: {
-      id: purchaseResult.rows[0].id,
-      productId: product.id,
-      purchasedAt: purchaseResult.rows[0].purchased_at,
-    },
+    purchase: purchaseResult,
   });
 }));
 

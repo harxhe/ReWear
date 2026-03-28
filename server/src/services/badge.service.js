@@ -1,7 +1,12 @@
 import { query } from '../db/query.js';
 
-async function getUserBadgeStats(userId) {
-  const result = await query(
+function createQueryRunner(db = { query }) {
+  return (text, params = []) => db.query(text, params);
+}
+
+async function getUserBadgeStats(userId, db) {
+  const runQuery = createQueryRunner(db);
+  const result = await runQuery(
     `
       SELECT
         COUNT(p.id)::int AS purchase_count,
@@ -20,8 +25,9 @@ async function getUserBadgeStats(userId) {
   };
 }
 
-async function getMaterialPurchaseCount(userId, materialName) {
-  const result = await query(
+async function getMaterialPurchaseCount(userId, materialName, db) {
+  const runQuery = createQueryRunner(db);
+  const result = await runQuery(
     `
       SELECT COUNT(*)::int AS purchase_count
       FROM purchases p
@@ -50,8 +56,9 @@ function badgeUnlocked(badge, stats, materialPurchaseCount) {
   }
 }
 
-export async function syncUserBadges(userId) {
-  const badgeDefinitionsResult = await query(
+export async function syncUserBadges(userId, db) {
+  const runQuery = createQueryRunner(db);
+  const badgeDefinitionsResult = await runQuery(
     `
       SELECT id, slug, title, description, rule_type, rule_threshold, material_name
       FROM badge_definitions
@@ -59,15 +66,15 @@ export async function syncUserBadges(userId) {
     `,
   );
 
-  const stats = await getUserBadgeStats(userId);
+  const stats = await getUserBadgeStats(userId, db);
 
   for (const badge of badgeDefinitionsResult.rows) {
     const materialPurchaseCount = badge.material_name
-      ? await getMaterialPurchaseCount(userId, badge.material_name)
+      ? await getMaterialPurchaseCount(userId, badge.material_name, db)
       : 0;
 
     if (badgeUnlocked(badge, stats, materialPurchaseCount)) {
-      await query(
+      await runQuery(
         `
           INSERT INTO user_badges (user_id, badge_id)
           VALUES ($1, $2)
