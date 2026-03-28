@@ -7,6 +7,93 @@ import { syncUserBadges, getUnlockedBadges } from '../services/badge.service.js'
 
 const usersRouter = Router();
 
+usersRouter.get('/me/profile', requireAuth, asyncHandler(async (request, response) => {
+  const userResult = await query(
+    `
+      SELECT id, full_name, email, avatar_url, total_water_saved_liters, total_co2_diverted_kg, created_at
+      FROM users
+      WHERE id = $1
+    `,
+    [request.auth.userId],
+  );
+
+  const listingSummaryResult = await query(
+    `
+      SELECT
+        COUNT(*)::int AS total_listings,
+        COUNT(*) FILTER (WHERE status = 'available')::int AS available_listings,
+        COUNT(*) FILTER (WHERE status = 'sold')::int AS sold_listings
+      FROM products
+      WHERE seller_id = $1
+    `,
+    [request.auth.userId],
+  );
+
+  const purchaseSummaryResult = await query(
+    `
+      SELECT COUNT(*)::int AS total_purchases
+      FROM purchases
+      WHERE buyer_id = $1
+    `,
+    [request.auth.userId],
+  );
+
+  const recentListingsResult = await query(
+    `
+      SELECT id, title, category, status, eco_score_grade, image_url, price, created_at
+      FROM products
+      WHERE seller_id = $1
+      ORDER BY created_at DESC
+      LIMIT 6
+    `,
+    [request.auth.userId],
+  );
+
+  const listingSummary = listingSummaryResult.rows[0];
+  const purchaseSummary = purchaseSummaryResult.rows[0];
+  const user = userResult.rows[0];
+
+  const roles = [];
+
+  if (Number(listingSummary.total_listings) > 0) {
+    roles.push('seller');
+  }
+
+  if (Number(purchaseSummary.total_purchases) > 0) {
+    roles.push('buyer');
+  }
+
+  if (roles.length === 0) {
+    roles.push('member');
+  }
+
+  response.json({
+    profile: {
+      availableListings: Number(listingSummary.available_listings),
+      avatarUrl: user.avatar_url,
+      createdAt: user.created_at,
+      email: user.email,
+      fullName: user.full_name,
+      recentListings: recentListingsResult.rows.map((row) => ({
+        category: row.category,
+        createdAt: row.created_at,
+        ecoScoreGrade: row.eco_score_grade,
+        id: row.id,
+        imageUrl: row.image_url,
+        price: Number(row.price),
+        status: row.status,
+        title: row.title,
+      })),
+      roles,
+      soldListings: Number(listingSummary.sold_listings),
+      totalCo2DivertedKg: Number(user.total_co2_diverted_kg),
+      totalListings: Number(listingSummary.total_listings),
+      totalPurchases: Number(purchaseSummary.total_purchases),
+      totalWaterSavedLiters: Number(user.total_water_saved_liters),
+    },
+  });
+}));
+
 usersRouter.get('/me/dashboard', requireAuth, asyncHandler(async (request, response) => {
   await syncUserBadges(request.auth.userId);
 

@@ -1,6 +1,7 @@
 import { Navigate, Route, Routes } from 'react-router-dom';
 
 import { AppShell } from './components/app-shell.jsx';
+import { AccountPage } from './pages/account-page.jsx';
 import { DashboardPage } from './pages/dashboard-page.jsx';
 import { LoginPage } from './pages/login-page.jsx';
 import { MarketplacePage } from './pages/marketplace-page.jsx';
@@ -11,7 +12,7 @@ function ProtectedRoute({ children }) {
   const { isAuthenticated } = useAuth();
 
   if (!isAuthenticated) {
-    return <Navigate to="/login" replace />;
+    return <Navigate to="/" replace />;
   }
 
   return children;
@@ -21,8 +22,31 @@ function App() {
   return (
     <Routes>
       <Route element={<AppShell />}>
-        <Route index element={<MarketplacePage />} />
-        <Route path="/sell" element={<SellPage />} />
+        <Route index element={<LoginPage />} />
+        <Route
+          path="/marketplace"
+          element={(
+            <ProtectedRoute>
+              <MarketplacePage />
+            </ProtectedRoute>
+          )}
+        />
+        <Route
+          path="/sell"
+          element={(
+            <ProtectedRoute>
+              <SellPage />
+            </ProtectedRoute>
+          )}
+        />
+        <Route
+          path="/account"
+          element={(
+            <ProtectedRoute>
+              <AccountPage />
+            </ProtectedRoute>
+          )}
+        />
         <Route
           path="/dashboard"
           element={(
@@ -31,7 +55,7 @@ function App() {
             </ProtectedRoute>
           )}
         />
-        <Route path="/login" element={<LoginPage />} />
+        <Route path="/login" element={<Navigate to="/" replace />} />
       </Route>
     </Routes>
   );

@@ -1,14 +1,15 @@
-@import url('https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&family=Cormorant+Garamond:wght@500;600;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Unica+One&display=swap');
 @import 'tailwindcss';
 
 @theme {
-  --font-sans: 'Manrope', sans-serif;
-  --font-heading: 'Cormorant Garamond', serif;
+  --font-sans: Arial, Helvetica, sans-serif;
+  --font-heading: Arial, Helvetica, sans-serif;
+  --font-logo: 'Unica One', sans-serif;
 }
 
 :root {
   color: #1f1a17;
-  font-family: 'Manrope', sans-serif;
+  font-family: Arial, Helvetica, sans-serif;
   font-synthesis: none;
   line-height: 1.5;
   text-rendering: optimizeLegibility;

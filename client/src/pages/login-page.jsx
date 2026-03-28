@@ -1,7 +1,7 @@
 import { useMutation } from '@tanstack/react-query';
-import { Leaf, LockKeyhole, Mail, UserRound } from 'lucide-react';
+import { ArrowRight, Leaf, LockKeyhole, Mail, Recycle, Shirt, UserRound } from 'lucide-react';
 import { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { Navigate, useNavigate } from 'react-router-dom';
 
 import { apiRequest } from '../lib/api.js';
 import { useAuth } from '../state/auth-context.js';
@@ -14,7 +14,7 @@ const initialForm = {
 
 export function LoginPage() {
   const navigate = useNavigate();
-  const { setAuth } = useAuth();
+  const { isAuthenticated, setAuth } = useAuth();
   const [mode, setMode] = useState('login');
   const [formState, setFormState] = useState(initialForm);
 
@@ -27,32 +27,45 @@ export function LoginPage() {
     }),
     onSuccess: (data) => {
       setAuth({ token: data.token, user: data.user });
-      navigate('/dashboard');
+      navigate('/marketplace');
     },
   });
 
-  return (
-    <section className="grid gap-8 lg:grid-cols-[1.05fr_0.95fr]">
-      <div className="rounded-[2rem] border border-stone-300/60 bg-[linear-gradient(135deg,_rgba(47,93,80,0.95)_0%,_rgba(88,118,96,0.92)_55%,_rgba(209,168,108,0.85)_100%)] p-8 text-white shadow-[0_24px_70px_-34px_rgba(29,51,42,0.75)] sm:p-10">
-        <p className="text-xs uppercase tracking-[0.35em] text-white/70">Member access</p>
-        <h1 className="mt-4 font-heading text-5xl leading-tight">Track your closet's real climate impact.</h1>
-        <p className="mt-4 max-w-xl text-lg text-white/85">Sign in to list garments, calculate eco-scores in real time, and watch your water and carbon savings grow after each purchase.</p>
+  if (isAuthenticated) {
+    return <Navigate to="/marketplace" replace />;
+  }
 
-        <div className="mt-8 grid gap-4 sm:grid-cols-2">
-          <div className="rounded-[1.5rem] border border-white/20 bg-white/10 p-5 backdrop-blur">
-            <Leaf className="h-5 w-5" />
-            <p className="mt-3 text-xl font-semibold">Transparent grading</p>
-            <p className="mt-2 text-sm text-white/75">Every listing shows an A-E badge based on material lifecycle data and circular condition bonuses.</p>
+  return (
+    <div className="space-y-8">
+      <section className="grid gap-8 lg:grid-cols-[1.2fr_0.8fr]">
+        <div className="rounded-[2rem] border border-stone-300/60 bg-[linear-gradient(135deg,_rgba(47,93,80,0.95)_0%,_rgba(88,118,96,0.92)_55%,_rgba(209,168,108,0.85)_100%)] p-8 text-white shadow-[0_24px_70px_-34px_rgba(29,51,42,0.75)] sm:p-10">
+          <p className="text-xs uppercase tracking-[0.35em] text-white/70">EcoThread marketplace</p>
+          <h1 className="mt-4 max-w-3xl font-heading text-5xl leading-tight sm:text-6xl">Buy and resell clothing with real sustainability proof on every listing.</h1>
+          <p className="mt-4 max-w-2xl text-lg text-white/85">ReWear turns second-hand shopping into a measurable circular experience with material-based eco scores, water savings, carbon diversion, and personal impact tracking.</p>
+
+          <div className="mt-8 flex flex-wrap gap-3">
+            <div className="inline-flex items-center gap-2 rounded-full bg-white/15 px-4 py-3 text-sm font-medium backdrop-blur">
+              <Leaf className="h-4 w-4" />
+              Live eco-score grading
+            </div>
+            <div className="inline-flex items-center gap-2 rounded-full bg-white/15 px-4 py-3 text-sm font-medium backdrop-blur">
+              <Recycle className="h-4 w-4" />
+              Second-hand impact tracking
+            </div>
+            <div className="inline-flex items-center gap-2 rounded-full bg-white/15 px-4 py-3 text-sm font-medium backdrop-blur">
+              <Shirt className="h-4 w-4" />
+              Real marketplace listings
+            </div>
           </div>
-          <div className="rounded-[1.5rem] border border-white/20 bg-white/10 p-5 backdrop-blur">
-            <LockKeyhole className="h-5 w-5" />
-            <p className="mt-3 text-xl font-semibold">JWT session flow</p>
-            <p className="mt-2 text-sm text-white/75">Your buyer-seller account stays ready for dashboard, feed, and listing actions.</p>
+
+          <div className="mt-10 grid gap-4 sm:grid-cols-3">
+            <LandingCard title="Transparent grading" text="Every item earns an A-E eco badge from material lifecycle data and condition bonuses." />
+            <LandingCard title="Live seller feedback" text="Listing forms preview the eco score before a seller submits the item." />
+            <LandingCard title="Buyer impact" text="Purchases roll up into water saved, CO2 diverted, badges, and profile activity." />
           </div>
         </div>
-      </div>
 
-      <div className="rounded-[2rem] border border-stone-300/60 bg-white/80 p-8 shadow-[0_18px_50px_-30px_rgba(55,45,32,0.45)] backdrop-blur sm:p-10">
+        <div className="rounded-[2rem] border border-stone-300/60 bg-white/80 p-8 shadow-[0_18px_50px_-30px_rgba(55,45,32,0.45)] backdrop-blur sm:p-10">
         <div className="inline-flex rounded-full bg-[#f0eadc] p-1 text-sm font-medium text-stone-700">
           <button type="button" className={`rounded-full px-4 py-2 ${mode === 'login' ? 'bg-stone-900 text-white' : ''}`} onClick={() => setMode('login')}>Log in</button>
           <button type="button" className={`rounded-full px-4 py-2 ${mode === 'signup' ? 'bg-stone-900 text-white' : ''}`} onClick={() => setMode('signup')}>Sign up</button>
@@ -109,8 +122,47 @@ export function LoginPage() {
             />
           </div>
         </div>
-      </div>
-    </section>
+        </div>
+      </section>
+
+      <section className="rounded-[2rem] border border-stone-300/60 bg-white/75 p-8 shadow-[0_18px_50px_-30px_rgba(55,45,32,0.45)] backdrop-blur sm:p-10">
+        <div className="flex flex-col gap-4 md:flex-row md:items-end md:justify-between">
+          <div>
+            <p className="text-xs uppercase tracking-[0.35em] text-[#4e7f74]">How it works</p>
+            <h2 className="mt-3 font-heading text-4xl text-stone-900">Join once, then shop, list, and track your impact.</h2>
+          </div>
+          <button type="button" onClick={() => setMode('signup')} className="inline-flex items-center gap-2 rounded-full bg-stone-900 px-5 py-3 text-sm font-semibold text-white">
+            Get started
+            <ArrowRight className="h-4 w-4" />
+          </button>
+        </div>
+
+        <div className="mt-8 grid gap-4 md:grid-cols-3">
+          <StepCard number="01" title="Create one account" text="Sign up once on this landing page. The same account can become a buyer, seller, or both." />
+          <StepCard number="02" title="Enter the marketplace" text="After login, you land directly in the authenticated marketplace with all available listings." />
+          <StepCard number="03" title="Build your profile" text="Buying and listing activity automatically shape your profile, dashboard, and badges." />
+        </div>
+      </section>
+    </div>
+  );
+}
+
+function LandingCard({ text, title }) {
+  return (
+    <div className="rounded-[1.5rem] border border-white/20 bg-white/10 p-5 backdrop-blur">
+      <p className="text-xl font-semibold">{title}</p>
+      <p className="mt-2 text-sm text-white/75">{text}</p>
+    </div>
+  );
+}
+
+function StepCard({ number, text, title }) {
+  return (
+    <div className="rounded-[1.5rem] bg-[#faf6f0] p-5">
+      <p className="text-xs font-semibold uppercase tracking-[0.28em] text-[#4e7f74]">{number}</p>
+      <p className="mt-3 text-xl font-semibold text-stone-900">{title}</p>
+      <p className="mt-2 text-sm text-stone-600">{text}</p>
+    </div>
   );
 }
 

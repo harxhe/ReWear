@@ -11,16 +11,24 @@ const gradeStyles = {
 export function ProductCard({ product }) {
   return (
     <article className="group overflow-hidden rounded-[2rem] border border-stone-300/60 bg-white/80 shadow-[0_20px_60px_-30px_rgba(55,45,32,0.45)] backdrop-blur transition hover:-translate-y-1 hover:shadow-[0_24px_70px_-28px_rgba(55,45,32,0.55)]">
-      <div className="relative h-72 bg-[linear-gradient(135deg,_#c6d4b2_0%,_#efe3d0_55%,_#d8cab1_100%)] p-6">
+      <div className="relative h-72 overflow-hidden bg-[linear-gradient(135deg,_#c6d4b2_0%,_#efe3d0_55%,_#d8cab1_100%)] p-6">
+        {product.imageUrl ? (
+          <img
+            src={product.imageUrl}
+            alt={product.title}
+            className="absolute inset-0 h-full w-full object-cover transition duration-500 group-hover:scale-105"
+          />
+        ) : null}
+        <div className="absolute inset-0 bg-gradient-to-t from-stone-950/55 via-stone-950/10 to-white/10" />
         <div className={`absolute right-5 top-5 rounded-full px-4 py-2 text-sm font-bold ${gradeStyles[product.ecoScoreGrade] || gradeStyles.E}`}>
           Eco {product.ecoScoreGrade}
         </div>
-        <div className="flex h-full items-end justify-between">
+        <div className="relative flex h-full items-end justify-between">
           <div>
-            <p className="text-xs uppercase tracking-[0.3em] text-stone-600">{product.category}</p>
-            <h3 className="mt-3 max-w-[13rem] font-heading text-3xl text-stone-900">{product.title}</h3>
+            <p className="text-xs uppercase tracking-[0.3em] text-white/75">{product.category}</p>
+            <h3 className="mt-3 max-w-[13rem] font-heading text-3xl text-white">{product.title}</h3>
           </div>
-          <div className="rounded-full border border-white/70 bg-white/60 px-4 py-3 text-sm font-medium text-stone-700 backdrop-blur">
+          <div className="rounded-full border border-white/40 bg-white/20 px-4 py-3 text-sm font-medium text-white backdrop-blur">
             {product.material.name}
           </div>
         </div>

@@ -21,6 +21,7 @@ const demoProducts = [
     category: 'Tops',
     conditionLabel: 'Gently Used',
     description: 'Soft cotton overshirt with a relaxed fit and clean stitching.',
+    imageUrl: 'https://images.unsplash.com/photo-1512436991641-6745cdb1723f?auto=format&fit=crop&w=1200&q=80',
     materialName: 'Cotton',
     price: 32,
     title: 'Used Cotton Work Shirt',
@@ -29,6 +30,7 @@ const demoProducts = [
     category: 'Outerwear',
     conditionLabel: 'Worn',
     description: 'Broken-in hemp chore jacket with visible character and lots of life left.',
+    imageUrl: 'https://images.unsplash.com/photo-1523398002811-999ca8dec234?auto=format&fit=crop&w=1200&q=80',
     materialName: 'Hemp',
     price: 58,
     title: 'Worn Hemp Chore Jacket',
@@ -37,9 +39,64 @@ const demoProducts = [
     category: 'Denim',
     conditionLabel: 'Like New',
     description: 'Structured recycled denim jeans with a tapered vintage cut.',
+    imageUrl: 'https://images.unsplash.com/photo-1541099649105-f69ad21f3246?auto=format&fit=crop&w=1200&q=80',
     materialName: 'Recycled Denim',
     price: 46,
     title: 'Recycled Denim Taper Jeans',
+  },
+  {
+    category: 'Dresses',
+    conditionLabel: 'Gently Used',
+    description: 'Airy linen midi dress with earthy stripes and an easy drape.',
+    imageUrl: 'https://images.unsplash.com/photo-1496747611176-843222e1e57c?auto=format&fit=crop&w=1200&q=80',
+    materialName: 'Linen',
+    price: 52,
+    title: 'Used Linen Midi Dress',
+  },
+  {
+    category: 'Outerwear',
+    conditionLabel: 'Like New',
+    description: 'Clean recycled polyester puffer built for cold commutes and light layering.',
+    imageUrl: 'https://images.unsplash.com/photo-1548883354-94bcfe321cbb?auto=format&fit=crop&w=1200&q=80',
+    materialName: 'Recycled Polyester',
+    price: 64,
+    title: 'Recycled Puffer Vest',
+  },
+  {
+    category: 'Accessories',
+    conditionLabel: 'Worn',
+    description: 'Chunky wool scarf with soft texture and visible vintage character.',
+    imageUrl: 'https://images.unsplash.com/photo-1529139574466-a303027c1d8b?auto=format&fit=crop&w=1200&q=80',
+    materialName: 'Wool',
+    price: 24,
+    title: 'Vintage Wool Winter Scarf',
+  },
+  {
+    category: 'Tops',
+    conditionLabel: 'Brand New',
+    description: 'Sleek nylon training shell with a modern sporty cut.',
+    imageUrl: 'https://images.unsplash.com/photo-1483985988355-763728e1935b?auto=format&fit=crop&w=1200&q=80',
+    materialName: 'Nylon',
+    price: 29,
+    title: 'Nylon Training Shell Top',
+  },
+  {
+    category: 'Accessories',
+    conditionLabel: 'Gently Used',
+    description: 'Minimal hemp tote with sturdy handles and everyday market-room carry.',
+    imageUrl: 'https://images.unsplash.com/photo-1542291026-7eec264c27ff?auto=format&fit=crop&w=1200&q=80',
+    materialName: 'Hemp',
+    price: 18,
+    title: 'Hemp Market Tote',
+  },
+  {
+    category: 'Tops',
+    conditionLabel: 'Like New',
+    description: 'Lightweight recycled polyester zip pullover for transitional layering.',
+    imageUrl: 'https://images.unsplash.com/photo-1503342217505-b0a15ec3261c?auto=format&fit=crop&w=1200&q=80',
+    materialName: 'Recycled Polyester',
+    price: 35,
+    title: 'Recycled Zip Pullover',
   },
 ];
 
@@ -108,6 +165,7 @@ try {
             eco_score_grade = $10,
             water_saved_liters = $11,
             co2_diverted_kg = $12,
+            image_url = $13,
             status = 'available',
             updated_at = NOW()
           WHERE id = $1
@@ -125,6 +183,7 @@ try {
           metrics.ecoScoreGrade,
           metrics.waterSavedLiters,
           metrics.co2DivertedKg,
+          product.imageUrl,
         ],
       );
       continue;
@@ -145,9 +204,10 @@ try {
           eco_score_grade,
           water_saved_liters,
           co2_diverted_kg,
+          image_url,
           status
         )
-        VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, 'available')
+        VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, 'available')
       `,
       [
         userIds.get('seller@rewear.demo'),
@@ -162,6 +222,7 @@ try {
         metrics.ecoScoreGrade,
         metrics.waterSavedLiters,
         metrics.co2DivertedKg,
+        product.imageUrl,
       ],
     );
   }

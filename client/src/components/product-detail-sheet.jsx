@@ -18,11 +18,17 @@ export function ProductDetailSheet({ canBuy, isBuying, onBuy, onClose, product }
           </button>
         </div>
 
-        <div className="mt-6 rounded-[2rem] bg-[linear-gradient(135deg,_#c6d4b2_0%,_#efe3d0_55%,_#d8cab1_100%)] p-6">
-          <div className="inline-flex rounded-full bg-[#2f5d50] px-4 py-2 text-sm font-semibold text-white">Eco {product.ecoScoreGrade}</div>
-          <p className="mt-6 text-sm uppercase tracking-[0.25em] text-stone-600">{product.category}</p>
-          <p className="mt-2 text-lg text-stone-700">{product.material.name} · {product.conditionLabel}</p>
-          <p className="mt-6 text-3xl font-semibold text-stone-900">${product.price.toFixed(2)}</p>
+        <div className="relative mt-6 overflow-hidden rounded-[2rem] bg-[linear-gradient(135deg,_#c6d4b2_0%,_#efe3d0_55%,_#d8cab1_100%)] p-6">
+          {product.imageUrl ? (
+            <img src={product.imageUrl} alt={product.title} className="absolute inset-0 h-full w-full object-cover" />
+          ) : null}
+          <div className="absolute inset-0 bg-gradient-to-t from-stone-950/60 via-stone-950/10 to-white/10" />
+          <div className="relative">
+            <div className="inline-flex rounded-full bg-[#2f5d50] px-4 py-2 text-sm font-semibold text-white">Eco {product.ecoScoreGrade}</div>
+            <p className="mt-6 text-sm uppercase tracking-[0.25em] text-white/75">{product.category}</p>
+            <p className="mt-2 text-lg text-white">{product.material.name} · {product.conditionLabel}</p>
+            <p className="mt-6 text-3xl font-semibold text-white">${product.price.toFixed(2)}</p>
+          </div>
         </div>
 
         <div className="mt-6 grid gap-4 sm:grid-cols-3">
