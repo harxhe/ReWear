@@ -8,7 +8,7 @@ export function AppShell() {
   const { isAuthenticated, signOut, user } = useAuth();
   const navItems = [
     { icon: Shirt, label: 'Marketplace', to: '/marketplace' },
-    { icon: Recycle, label: 'Sell', to: '/sell' },
+    { icon: Recycle, label: 'Sell', to: '/sell', roles: ['seller'] },
     { icon: Leaf, label: 'Dashboard', to: '/dashboard' },
     { icon: UserCircle2, label: 'Account', to: isAuthenticated ? '/account' : '/' },
   ];
@@ -28,7 +28,17 @@ export function AppShell() {
           </NavLink>
 
           <nav className="hidden items-center gap-2 md:flex">
-            {navItems.filter((item) => isAuthenticated || item.label === 'Account').map((item) => {
+            {navItems.filter((item) => {
+              if (!isAuthenticated) {
+                return item.label === 'Account';
+              }
+
+              if (!item.roles) {
+                return true;
+              }
+
+              return item.roles.includes(user?.role);
+            }).map((item) => {
               const NavIcon = item.icon;
 
               return (

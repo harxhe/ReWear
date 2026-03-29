@@ -9,11 +9,19 @@ import { PurchasePage } from './pages/purchase-page.jsx';
 import { SellPage } from './pages/sell-page.jsx';
 import { useAuth } from './state/auth-context.js';
 
-function ProtectedRoute({ children }) {
-  const { isAuthenticated } = useAuth();
+function ProtectedRoute({ allowedRoles, children }) {
+  const { isAuthenticated, user } = useAuth();
 
   if (!isAuthenticated) {
     return <Navigate to="/" replace />;
+  }
+
+  if (!user) {
+    return null;
+  }
+
+  if (allowedRoles && !allowedRoles.includes(user?.role)) {
+    return <Navigate to="/account" replace />;
   }
 
   return children;
@@ -35,7 +43,7 @@ function App() {
         <Route
           path="/sell"
           element={(
-            <ProtectedRoute>
+            <ProtectedRoute allowedRoles={['seller']}>
               <SellPage />
             </ProtectedRoute>
           )}
@@ -43,7 +51,7 @@ function App() {
         <Route
           path="/purchase/:productId"
           element={(
-            <ProtectedRoute>
+            <ProtectedRoute allowedRoles={['buyer']}>
               <PurchasePage />
             </ProtectedRoute>
           )}

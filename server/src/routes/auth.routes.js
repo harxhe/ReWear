@@ -13,6 +13,7 @@ function sanitizeUser(row) {
     id: row.id,
     fullName: row.full_name,
     email: row.email,
+    role: row.role,
     avatarUrl: row.avatar_url,
     totalWaterSavedLiters: Number(row.total_water_saved_liters),
     totalCo2DivertedKg: Number(row.total_co2_diverted_kg),
@@ -21,10 +22,14 @@ function sanitizeUser(row) {
 }
 
 authRouter.post('/signup', asyncHandler(async (request, response) => {
-  const { email, fullName, password } = request.body;
+  const { email, fullName, password, role } = request.body;
 
-  if (!fullName || !email || !password) {
-    throw new HttpError(400, 'Full name, email, and password are required.');
+  if (!fullName || !email || !password || !role) {
+    throw new HttpError(400, 'Full name, email, password, and account role are required.');
+  }
+
+  if (!['buyer', 'seller'].includes(role)) {
+    throw new HttpError(400, 'Role must be buyer or seller.');
   }
 
   const existingUser = await query('SELECT id FROM users WHERE email = $1', [email.toLowerCase()]);
@@ -36,11 +41,11 @@ authRouter.post('/signup', asyncHandler(async (request, response) => {
   const passwordHash = await bcrypt.hash(password, 10);
   const result = await query(
     `
-      INSERT INTO users (full_name, email, password_hash)
-      VALUES ($1, $2, $3)
-      RETURNING id, full_name, email, avatar_url, total_water_saved_liters, total_co2_diverted_kg, created_at
+      INSERT INTO users (full_name, email, password_hash, role)
+      VALUES ($1, $2, $3, $4)
+      RETURNING id, full_name, email, role, avatar_url, total_water_saved_liters, total_co2_diverted_kg, created_at
     `,
-    [fullName, email.toLowerCase(), passwordHash],
+    [fullName, email.toLowerCase(), passwordHash, role],
   );
 
   const user = sanitizeUser(result.rows[0]);
@@ -60,7 +65,7 @@ authRouter.post('/login', asyncHandler(async (request, response) => {
 
   const result = await query(
     `
-      SELECT id, full_name, email, avatar_url, password_hash, total_water_saved_liters, total_co2_diverted_kg, created_at
+      SELECT id, full_name, email, role, avatar_url, password_hash, total_water_saved_liters, total_co2_diverted_kg, created_at
       FROM users
       WHERE email = $1
     `,
@@ -89,7 +94,7 @@ authRouter.post('/login', asyncHandler(async (request, response) => {
 authRouter.get('/me', requireAuth, asyncHandler(async (request, response) => {
   const result = await query(
     `
-      SELECT id, full_name, email, avatar_url, total_water_saved_liters, total_co2_diverted_kg, created_at
+      SELECT id, full_name, email, role, avatar_url, total_water_saved_liters, total_co2_diverted_kg, created_at
       FROM users
       WHERE id = $1
     `,

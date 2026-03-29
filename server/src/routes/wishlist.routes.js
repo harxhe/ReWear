@@ -4,6 +4,7 @@ import { query } from '../db/query.js';
 import { asyncHandler } from '../lib/async-handler.js';
 import { requireAuth } from '../lib/auth.js';
 import { HttpError } from '../lib/http-error.js';
+import { requireAccountRole } from '../middleware/require-account-role.js';
 
 const wishlistRouter = Router();
 
@@ -31,7 +32,7 @@ function mapWishlistRow(row) {
   };
 }
 
-wishlistRouter.get('/', requireAuth, asyncHandler(async (request, response) => {
+wishlistRouter.get('/', requireAuth, requireAccountRole(['buyer']), asyncHandler(async (request, response) => {
   const result = await query(
     `
       SELECT
@@ -65,7 +66,7 @@ wishlistRouter.get('/', requireAuth, asyncHandler(async (request, response) => {
   });
 }));
 
-wishlistRouter.post('/', requireAuth, asyncHandler(async (request, response) => {
+wishlistRouter.post('/', requireAuth, requireAccountRole(['buyer']), asyncHandler(async (request, response) => {
   const { productId } = request.body;
 
   if (!productId) {
@@ -94,7 +95,7 @@ wishlistRouter.post('/', requireAuth, asyncHandler(async (request, response) => 
   response.status(201).json({ success: true });
 }));
 
-wishlistRouter.delete('/:productId', requireAuth, asyncHandler(async (request, response) => {
+wishlistRouter.delete('/:productId', requireAuth, requireAccountRole(['buyer']), asyncHandler(async (request, response) => {
   await query('DELETE FROM wishlist_items WHERE user_id = $1 AND product_id = $2', [request.auth.userId, request.params.productId]);
 
   response.json({ success: true });

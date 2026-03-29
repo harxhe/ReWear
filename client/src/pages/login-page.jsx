@@ -10,6 +10,7 @@ const initialForm = {
   email: '',
   fullName: '',
   password: '',
+  role: 'buyer',
 };
 
 export function LoginPage() {
@@ -79,9 +80,17 @@ export function LoginPage() {
           }}
         >
           {mode === 'signup' ? (
-            <Field label="Full name" icon={<UserRound className="h-4 w-4" />}>
-              <input className="w-full rounded-2xl border border-stone-300 bg-[#faf6f0] px-4 py-3 outline-none" value={formState.fullName} onChange={(event) => setFormState((current) => ({ ...current, fullName: event.target.value }))} placeholder="Ava Patel" />
-            </Field>
+            <>
+              <Field label="Full name" icon={<UserRound className="h-4 w-4" />}>
+                <input className="w-full rounded-2xl border border-stone-300 bg-[#faf6f0] px-4 py-3 outline-none" value={formState.fullName} onChange={(event) => setFormState((current) => ({ ...current, fullName: event.target.value }))} placeholder="Ava Patel" />
+              </Field>
+              <Field label="Account type" icon={<Shirt className="h-4 w-4" />}>
+                <select className="w-full rounded-2xl border border-stone-300 bg-[#faf6f0] px-4 py-3 outline-none" value={formState.role} onChange={(event) => setFormState((current) => ({ ...current, role: event.target.value }))}>
+                  <option value="buyer">Buyer</option>
+                  <option value="seller">Seller</option>
+                </select>
+              </Field>
+            </>
           ) : null}
 
           <Field label="Email" icon={<Mail className="h-4 w-4" />}>
@@ -138,7 +147,7 @@ export function LoginPage() {
         </div>
 
         <div className="mt-8 grid gap-4 md:grid-cols-3">
-          <StepCard number="01" title="Create one account" text="Sign up once on this landing page. The same account can become a buyer, seller, or both." />
+          <StepCard number="01" title="Create one account" text="Sign up on this landing page and choose whether the account is for buying or selling." />
           <StepCard number="02" title="Enter the marketplace" text="After login, you land directly in the authenticated marketplace with all available listings." />
           <StepCard number="03" title="Build your profile" text="Buying and listing activity automatically shape your profile, dashboard, and badges." />
         </div>

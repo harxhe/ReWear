@@ -5,12 +5,36 @@ CREATE TABLE IF NOT EXISTS users (
   full_name VARCHAR(120) NOT NULL,
   email VARCHAR(160) NOT NULL UNIQUE,
   password_hash TEXT NOT NULL,
+  role VARCHAR(20) NOT NULL DEFAULT 'buyer',
   avatar_url TEXT,
   total_water_saved_liters NUMERIC(12, 2) NOT NULL DEFAULT 0,
   total_co2_diverted_kg NUMERIC(12, 2) NOT NULL DEFAULT 0,
   created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
-  updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+  updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+  CONSTRAINT users_role_valid CHECK (role IN ('buyer', 'seller'))
 );
+
+ALTER TABLE users ADD COLUMN IF NOT EXISTS role VARCHAR(20);
+UPDATE users
+SET role = CASE
+  WHEN EXISTS (SELECT 1 FROM products p WHERE p.seller_id = users.id) THEN 'seller'
+  ELSE 'buyer'
+END
+WHERE role IS NULL OR role = 'both';
+ALTER TABLE users ALTER COLUMN role SET DEFAULT 'buyer';
+ALTER TABLE users ALTER COLUMN role SET NOT NULL;
+ALTER TABLE users DROP CONSTRAINT IF EXISTS users_role_valid;
+DO $$
+BEGIN
+  IF NOT EXISTS (
+    SELECT 1
+    FROM pg_constraint
+    WHERE conname = 'users_role_valid'
+  ) THEN
+    ALTER TABLE users
+    ADD CONSTRAINT users_role_valid CHECK (role IN ('buyer', 'seller'));
+  END IF;
+END $$;
 
 CREATE TABLE IF NOT EXISTS materials_registry (
   id BIGSERIAL PRIMARY KEY,

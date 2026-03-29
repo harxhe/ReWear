@@ -5,11 +5,12 @@ import { withTransaction } from '../db/transaction.js';
 import { asyncHandler } from '../lib/async-handler.js';
 import { requireAuth } from '../lib/auth.js';
 import { HttpError } from '../lib/http-error.js';
+import { requireAccountRole } from '../middleware/require-account-role.js';
 import { syncUserBadges } from '../services/badge.service.js';
 
 const purchasesRouter = Router();
 
-purchasesRouter.post('/', requireAuth, asyncHandler(async (request, response) => {
+purchasesRouter.post('/', requireAuth, requireAccountRole(['buyer']), asyncHandler(async (request, response) => {
   const { productId } = request.body;
 
   if (!productId) {

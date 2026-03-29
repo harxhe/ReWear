@@ -6,7 +6,7 @@ import { apiRequest, authHeaders } from '../lib/api.js';
 import { useAuth } from '../state/auth-context.js';
 
 export function AccountPage() {
-  const { token } = useAuth();
+  const { token, user } = useAuth();
 
   const profileQuery = useQuery({
     queryFn: () => apiRequest('/users/me/profile', {
@@ -16,6 +16,7 @@ export function AccountPage() {
   });
 
   const wishlistQuery = useQuery({
+    enabled: user?.role === 'buyer',
     queryFn: () => apiRequest('/wishlist', {
       headers: authHeaders(token),
     }),
@@ -31,6 +32,8 @@ export function AccountPage() {
   }
 
   const { profile } = profileQuery.data;
+  const isBuyer = profile.role === 'buyer';
+  const isSeller = profile.role === 'seller';
 
   return (
     <div className="space-y-8">
@@ -40,7 +43,13 @@ export function AccountPage() {
             <p className="text-xs uppercase tracking-[0.35em] text-white/70">Account profile</p>
             <h1 className="mt-3 font-heading text-5xl">{profile.fullName}</h1>
             <p className="mt-3 text-lg text-white/85">{profile.email}</p>
-            <p className="mt-5 max-w-2xl text-sm text-white/80">Your single ReWear account handles both buying and selling. Your profile grows as you list pieces, save items, and complete purchases.</p>
+            <div className="mt-5 inline-flex rounded-full bg-white/15 px-4 py-2 text-sm font-semibold uppercase tracking-[0.2em] text-white">
+              {profile.role}
+            </div>
+            <p className="mt-4 max-w-2xl text-sm text-white/80">
+              {profile.role === 'seller' ? 'Your seller account focuses on active listings and completed sales.' : null}
+              {profile.role === 'buyer' ? 'Your buyer account focuses on purchases, wishlist tracking, and sustainability impact.' : null}
+            </p>
           </div>
           <div className="rounded-[1.5rem] border border-white/20 bg-white/10 p-5 backdrop-blur">
             <p className="text-sm uppercase tracking-[0.25em] text-white/70">Member since</p>
@@ -51,9 +60,11 @@ export function AccountPage() {
 
       <section className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
         <ProfileMetric icon={<Store className="h-5 w-5 text-[#8b5a32]" />} label="Total listings" value={profile.totalListings} />
-        <ProfileMetric icon={<ShoppingBag className="h-5 w-5 text-[#2f5d50]" />} label="Total purchases" value={profile.totalPurchases} />
-        <ProfileMetric icon={<Droplets className="h-5 w-5 text-[#4e7f74]" />} label="Water saved" value={`${Math.round(profile.totalWaterSavedLiters)} L`} />
-        <ProfileMetric icon={<Recycle className="h-5 w-5 text-[#8c5b43]" />} label="CO2 diverted" value={`${profile.totalCo2DivertedKg.toFixed(1)} kg`} />
+        {isBuyer ? <ProfileMetric icon={<ShoppingBag className="h-5 w-5 text-[#2f5d50]" />} label="Total purchases" value={profile.totalPurchases} /> : null}
+        {isSeller ? <ProfileMetric icon={<ShoppingBag className="h-5 w-5 text-[#2f5d50]" />} label="Sold listings" value={profile.soldListings} /> : null}
+        {isBuyer ? <ProfileMetric icon={<Droplets className="h-5 w-5 text-[#4e7f74]" />} label="Water saved" value={`${Math.round(profile.totalWaterSavedLiters)} L`} /> : null}
+        {isSeller ? <ProfileMetric icon={<Droplets className="h-5 w-5 text-[#4e7f74]" />} label="Active listings" value={profile.availableListings} /> : null}
+        {isBuyer ? <ProfileMetric icon={<Recycle className="h-5 w-5 text-[#8c5b43]" />} label="CO2 diverted" value={`${profile.totalCo2DivertedKg.toFixed(1)} kg`} /> : null}
       </section>
 
       <section className="grid gap-8 lg:grid-cols-[0.95fr_1.05fr]">
@@ -63,22 +74,29 @@ export function AccountPage() {
             <h2 className="font-heading text-3xl text-stone-900">Marketplace activity</h2>
           </div>
           <div className="mt-6 space-y-4 text-stone-700">
-            <div className="rounded-[1.5rem] bg-[#faf6f0] p-4">
-              <p className="font-semibold text-stone-900">Seller activity</p>
-              <p className="mt-2">{profile.availableListings} active listings and {profile.soldListings} sold listings.</p>
-            </div>
-            <div className="rounded-[1.5rem] bg-[#faf6f0] p-4">
-              <p className="font-semibold text-stone-900">Buyer activity</p>
-              <p className="mt-2">{profile.totalPurchases} purchases completed through the marketplace.</p>
-            </div>
-            <div className="rounded-[1.5rem] bg-[#faf6f0] p-4">
-              <p className="font-semibold text-stone-900">Wishlist activity</p>
-              <p className="mt-2">{wishlistQuery.data?.wishlist?.length || 0} saved items waiting for you.</p>
-            </div>
+            {isSeller ? (
+              <div className="rounded-[1.5rem] bg-[#faf6f0] p-4">
+                <p className="font-semibold text-stone-900">Seller activity</p>
+                <p className="mt-2">{profile.availableListings} active listings and {profile.soldListings} sold listings.</p>
+              </div>
+            ) : null}
+            {isBuyer ? (
+              <div className="rounded-[1.5rem] bg-[#faf6f0] p-4">
+                <p className="font-semibold text-stone-900">Buyer activity</p>
+                <p className="mt-2">{profile.totalPurchases} purchases completed through the marketplace.</p>
+              </div>
+            ) : null}
+            {isBuyer ? (
+              <div className="rounded-[1.5rem] bg-[#faf6f0] p-4">
+                <p className="font-semibold text-stone-900">Wishlist activity</p>
+                <p className="mt-2">{wishlistQuery.data?.wishlist?.length || 0} saved items waiting for you.</p>
+              </div>
+            ) : null}
           </div>
         </div>
 
-        <div className="rounded-[2rem] border border-stone-300/60 bg-white/80 p-8 shadow-[0_18px_50px_-30px_rgba(55,45,32,0.45)] backdrop-blur">
+        {isSeller ? (
+          <div className="rounded-[2rem] border border-stone-300/60 bg-white/80 p-8 shadow-[0_18px_50px_-30px_rgba(55,45,32,0.45)] backdrop-blur">
           <div className="flex items-center gap-3">
             <Leaf className="h-5 w-5 text-[#4e7f74]" />
             <h2 className="font-heading text-3xl text-stone-900">Recent listings</h2>
@@ -114,10 +132,56 @@ export function AccountPage() {
               </div>
             ))}
           </div>
-        </div>
+          </div>
+        ) : (
+          <div className="rounded-[2rem] border border-stone-300/60 bg-white/80 p-8 shadow-[0_18px_50px_-30px_rgba(55,45,32,0.45)] backdrop-blur">
+            <div className="flex items-center gap-3">
+              <ShoppingBag className="h-5 w-5 text-[#4e7f74]" />
+              <h2 className="font-heading text-3xl text-stone-900">Recent purchases</h2>
+            </div>
+            <div className="mt-6 space-y-4">
+              {profile.recentPurchases.length === 0 ? <p className="text-stone-600">You have not purchased anything yet.</p> : profile.recentPurchases.map((purchase) => (
+                <div key={purchase.id} className="flex gap-4 rounded-[1.5rem] border border-stone-300/60 bg-[#faf6f0] p-4">
+                  <div className="h-20 w-20 shrink-0 overflow-hidden rounded-2xl bg-stone-200">
+                    {purchase.imageUrl ? <img src={purchase.imageUrl} alt={purchase.title} className="h-full w-full object-cover" /> : null}
+                  </div>
+                  <div className="min-w-0 flex-1">
+                    <p className="font-semibold text-stone-900">{purchase.title}</p>
+                    <p className="text-sm text-stone-600">{purchase.materialName} · Eco {purchase.ecoScoreGrade}</p>
+                    <p className="mt-2 text-sm text-stone-700">${purchase.price.toFixed(2)}</p>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
       </section>
 
-      <section className="rounded-[2rem] border border-stone-300/60 bg-white/80 p-8 shadow-[0_18px_50px_-30px_rgba(55,45,32,0.45)] backdrop-blur">
+      {isBuyer && isSeller ? (
+        <section className="rounded-[2rem] border border-stone-300/60 bg-white/80 p-8 shadow-[0_18px_50px_-30px_rgba(55,45,32,0.45)] backdrop-blur">
+          <div className="flex items-center gap-3">
+            <ShoppingBag className="h-5 w-5 text-[#4e7f74]" />
+            <h2 className="font-heading text-3xl text-stone-900">Recent purchases</h2>
+          </div>
+          <div className="mt-6 grid gap-4 lg:grid-cols-2">
+            {profile.recentPurchases.length === 0 ? <p className="text-stone-600">You have not purchased anything yet.</p> : profile.recentPurchases.map((purchase) => (
+              <div key={purchase.id} className="flex gap-4 rounded-[1.5rem] border border-stone-300/60 bg-[#faf6f0] p-4">
+                <div className="h-20 w-20 shrink-0 overflow-hidden rounded-2xl bg-stone-200">
+                  {purchase.imageUrl ? <img src={purchase.imageUrl} alt={purchase.title} className="h-full w-full object-cover" /> : null}
+                </div>
+                <div className="min-w-0 flex-1">
+                  <p className="font-semibold text-stone-900">{purchase.title}</p>
+                  <p className="text-sm text-stone-600">{purchase.materialName} · Eco {purchase.ecoScoreGrade}</p>
+                  <p className="mt-2 text-sm text-stone-700">${purchase.price.toFixed(2)}</p>
+                </div>
+              </div>
+            ))}
+          </div>
+        </section>
+      ) : null}
+
+      {isBuyer ? (
+        <section className="rounded-[2rem] border border-stone-300/60 bg-white/80 p-8 shadow-[0_18px_50px_-30px_rgba(55,45,32,0.45)] backdrop-blur">
         <div className="flex items-center gap-3">
           <Heart className="h-5 w-5 text-[#4e7f74]" />
           <h2 className="font-heading text-3xl text-stone-900">Wishlist</h2>
@@ -137,7 +201,8 @@ export function AccountPage() {
           ))}
           {(wishlistQuery.data?.wishlist || []).length === 0 ? <p className="text-stone-600">You have not saved any items yet.</p> : null}
         </div>
-      </section>
+        </section>
+      ) : null}
     </div>
   );
 }

@@ -16,7 +16,7 @@ const defaultFilters = {
 
 export function MarketplacePage() {
   const navigate = useNavigate();
-  const { token } = useAuth();
+  const { token, user } = useAuth();
   const [filters, setFilters] = useState(defaultFilters);
 
   const materialsQuery = useQuery({
@@ -42,6 +42,7 @@ export function MarketplacePage() {
   const categories = useMemo(() => ['Tops', 'Outerwear', 'Dresses', 'Denim', 'Accessories'], []);
 
   const wishlistQuery = useQuery({
+    enabled: user?.role === 'buyer',
     queryFn: () => apiRequest('/wishlist', { headers: authHeaders(token) }),
     queryKey: ['wishlist', token],
   });

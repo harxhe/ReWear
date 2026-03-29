@@ -4,6 +4,7 @@ import { query } from '../db/query.js';
 import { asyncHandler } from '../lib/async-handler.js';
 import { requireAuth } from '../lib/auth.js';
 import { HttpError } from '../lib/http-error.js';
+import { requireAccountRole } from '../middleware/require-account-role.js';
 import { calculateSustainabilityMetrics } from '../services/sustainability.service.js';
 
 const productsRouter = Router();
@@ -100,7 +101,7 @@ function calculateMetricsForMaterial(material, conditionLabel) {
 }
 
 productsRouter.post('/preview-score', asyncHandler(async (request, response) => {
-  const { conditionLabel, materialId } = request.body;
+  const { conditionLabel, materialId } = request.body || {};
 
   if (!materialId || !conditionLabel) {
     throw new HttpError(400, 'Material and condition are required to preview the eco score.');
@@ -117,8 +118,8 @@ productsRouter.post('/preview-score', asyncHandler(async (request, response) => 
   });
 }));
 
-productsRouter.post('/', requireAuth, asyncHandler(async (request, response) => {
-  const { category, conditionLabel, description, imageUrl, materialId, price, title } = request.body;
+productsRouter.post('/', requireAuth, requireAccountRole(['seller']), asyncHandler(async (request, response) => {
+  const { category, conditionLabel, description, imageUrl, materialId, price, title } = request.body || {};
 
   if (!title || !category || !conditionLabel || !materialId || price === undefined) {
     throw new HttpError(400, 'Title, category, material, condition, and price are required.');
@@ -161,8 +162,8 @@ productsRouter.post('/', requireAuth, asyncHandler(async (request, response) => 
   });
 }));
 
-productsRouter.put('/:productId', requireAuth, asyncHandler(async (request, response) => {
-  const { category, conditionLabel, description, imageUrl, materialId, price, title } = request.body;
+productsRouter.put('/:productId', requireAuth, requireAccountRole(['seller']), asyncHandler(async (request, response) => {
+  const { category, conditionLabel, description, imageUrl, materialId, price, title } = request.body || {};
 
   if (!title || !category || !conditionLabel || !materialId || price === undefined) {
     throw new HttpError(400, 'Title, category, material, condition, and price are required.');
@@ -230,7 +231,7 @@ productsRouter.put('/:productId', requireAuth, asyncHandler(async (request, resp
   });
 }));
 
-productsRouter.delete('/:productId', requireAuth, asyncHandler(async (request, response) => {
+productsRouter.delete('/:productId', requireAuth, requireAccountRole(['seller']), asyncHandler(async (request, response) => {
   const result = await query('SELECT seller_id, status FROM products WHERE id = $1', [request.params.productId]);
 
   if (result.rowCount === 0) {

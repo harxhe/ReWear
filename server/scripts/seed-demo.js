@@ -9,10 +9,12 @@ const demoUsers = [
   {
     email: 'seller@rewear.demo',
     fullName: 'Mira Seller',
+    role: 'seller',
   },
   {
     email: 'buyer@rewear.demo',
     fullName: 'Noah Buyer',
+    role: 'buyer',
   },
 ];
 
@@ -111,13 +113,14 @@ try {
   for (const user of demoUsers) {
     const result = await client.query(
       `
-        INSERT INTO users (full_name, email, password_hash)
-        VALUES ($1, $2, $3)
+        INSERT INTO users (full_name, email, password_hash, role)
+        VALUES ($1, $2, $3, $4)
         ON CONFLICT (email) DO UPDATE
-        SET full_name = EXCLUDED.full_name
+        SET full_name = EXCLUDED.full_name,
+            role = EXCLUDED.role
         RETURNING id, email
       `,
-      [user.fullName, user.email, passwordHash],
+      [user.fullName, user.email, passwordHash, user.role],
     );
 
     userIds.set(result.rows[0].email, result.rows[0].id);
