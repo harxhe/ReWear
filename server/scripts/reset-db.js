@@ -11,6 +11,7 @@ const client = new Client({
 const resetSql = `
 BEGIN;
 DROP TABLE IF EXISTS user_badges CASCADE;
+DROP TABLE IF EXISTS wishlist_items CASCADE;
 DROP TABLE IF EXISTS badge_definitions CASCADE;
 DROP TABLE IF EXISTS purchases CASCADE;
 DROP TABLE IF EXISTS products CASCADE;

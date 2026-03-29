@@ -117,7 +117,7 @@ Base URL: `http://localhost:4000/api`
 
 - `GET /users/me/profile`
   - auth required
-  - returns profile details, inferred marketplace roles, listing counts, and recent listings
+  - returns profile details, listing counts, and recent listings
 - `GET /users/me/dashboard`
   - auth required
   - returns dashboard totals, purchase history, and unlocked badges

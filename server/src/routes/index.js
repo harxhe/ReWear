@@ -5,6 +5,7 @@ import { materialsRouter } from './materials.routes.js';
 import { purchasesRouter } from './purchases.routes.js';
 import { productsRouter } from './products.routes.js';
 import { usersRouter } from './users.routes.js';
+import { wishlistRouter } from './wishlist.routes.js';
 
 const apiRouter = Router();
 
@@ -13,5 +14,6 @@ apiRouter.use('/materials', materialsRouter);
 apiRouter.use('/purchases', purchasesRouter);
 apiRouter.use('/products', productsRouter);
 apiRouter.use('/users', usersRouter);
+apiRouter.use('/wishlist', wishlistRouter);
 
 export { apiRouter };

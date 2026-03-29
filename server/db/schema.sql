@@ -84,11 +84,20 @@ CREATE TABLE IF NOT EXISTS user_badges (
   CONSTRAINT user_badges_unique UNIQUE (user_id, badge_id)
 );
 
+CREATE TABLE IF NOT EXISTS wishlist_items (
+  id BIGSERIAL PRIMARY KEY,
+  user_id BIGINT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+  product_id BIGINT NOT NULL REFERENCES products(id) ON DELETE CASCADE,
+  created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+  CONSTRAINT wishlist_items_unique UNIQUE (user_id, product_id)
+);
+
 CREATE INDEX IF NOT EXISTS idx_products_seller_id ON products(seller_id);
 CREATE INDEX IF NOT EXISTS idx_products_material_id ON products(material_id);
 CREATE INDEX IF NOT EXISTS idx_products_category ON products(category);
 CREATE INDEX IF NOT EXISTS idx_products_grade ON products(eco_score_grade);
 CREATE INDEX IF NOT EXISTS idx_products_status ON products(status);
 CREATE INDEX IF NOT EXISTS idx_purchases_buyer_id ON purchases(buyer_id);
+CREATE INDEX IF NOT EXISTS idx_wishlist_user_id ON wishlist_items(user_id);
 
 COMMIT;

@@ -5,6 +5,7 @@ import { AccountPage } from './pages/account-page.jsx';
 import { DashboardPage } from './pages/dashboard-page.jsx';
 import { LoginPage } from './pages/login-page.jsx';
 import { MarketplacePage } from './pages/marketplace-page.jsx';
+import { PurchasePage } from './pages/purchase-page.jsx';
 import { SellPage } from './pages/sell-page.jsx';
 import { useAuth } from './state/auth-context.js';
 
@@ -36,6 +37,14 @@ function App() {
           element={(
             <ProtectedRoute>
               <SellPage />
+            </ProtectedRoute>
+          )}
+        />
+        <Route
+          path="/purchase/:productId"
+          element={(
+            <ProtectedRoute>
+              <PurchasePage />
             </ProtectedRoute>
           )}
         />

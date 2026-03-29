@@ -53,20 +53,6 @@ usersRouter.get('/me/profile', requireAuth, asyncHandler(async (request, respons
   const purchaseSummary = purchaseSummaryResult.rows[0];
   const user = userResult.rows[0];
 
-  const roles = [];
-
-  if (Number(listingSummary.total_listings) > 0) {
-    roles.push('seller');
-  }
-
-  if (Number(purchaseSummary.total_purchases) > 0) {
-    roles.push('buyer');
-  }
-
-  if (roles.length === 0) {
-    roles.push('member');
-  }
-
   response.json({
     profile: {
       availableListings: Number(listingSummary.available_listings),
@@ -84,7 +70,6 @@ usersRouter.get('/me/profile', requireAuth, asyncHandler(async (request, respons
         status: row.status,
         title: row.title,
       })),
-      roles,
       soldListings: Number(listingSummary.sold_listings),
       totalCo2DivertedKg: Number(user.total_co2_diverted_kg),
       totalListings: Number(listingSummary.total_listings),

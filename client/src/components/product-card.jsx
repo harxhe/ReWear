@@ -43,6 +43,12 @@ export function ProductCard({ product }) {
           <p className="text-2xl font-semibold text-stone-900">${product.price.toFixed(2)}</p>
         </div>
 
+        {product.isWishlisted ? (
+          <div className="inline-flex rounded-full bg-rose-50 px-3 py-1 text-xs font-semibold uppercase tracking-[0.2em] text-rose-600">
+            In wishlist
+          </div>
+        ) : null}
+
         <div className="grid grid-cols-3 gap-3 text-sm text-stone-700">
           <div className="rounded-2xl bg-[#eef3e7] p-3">
             <Leaf className="mb-2 h-4 w-4 text-[#3b6b59]" />

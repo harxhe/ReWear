@@ -1,7 +1,7 @@
-import { useMutation, useQuery } from '@tanstack/react-query';
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { Droplets, Leaf, Recycle, Sparkles } from 'lucide-react';
 import { useMemo, useState } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate, useSearchParams } from 'react-router-dom';
 
 import { apiRequest, authHeaders } from '../lib/api.js';
 import { useAuth } from '../state/auth-context.js';
@@ -17,14 +17,42 @@ const defaultForm = {
 };
 
 export function SellPage() {
+  const navigate = useNavigate();
+  const queryClient = useQueryClient();
+  const [searchParams] = useSearchParams();
+  const listingId = searchParams.get('listing');
   const { isAuthenticated, token } = useAuth();
-  const [formState, setFormState] = useState(defaultForm);
+  const [draftState, setDraftState] = useState(null);
 
   const materialsQuery = useQuery({
     queryFn: () => apiRequest('/materials'),
     queryKey: ['materials'],
   });
 
+  const listingQuery = useQuery({
+    enabled: Boolean(listingId),
+    queryFn: () => apiRequest(`/products/${listingId}`),
+    queryKey: ['edit-listing', listingId],
+  });
+
+  const baseFormState = useMemo(() => {
+    if (listingQuery.data?.product) {
+      const product = listingQuery.data.product;
+      return {
+        category: product.category,
+        conditionLabel: product.conditionLabel,
+        description: product.description || '',
+        imageUrl: product.imageUrl || '',
+        materialId: String(product.material.id),
+        price: String(product.price),
+        title: product.title,
+      };
+    }
+
+    return defaultForm;
+  }, [listingQuery.data]);
+
+  const formState = draftState || baseFormState;
   const selectedMaterialId = useMemo(() => (
     formState.materialId || String(materialsQuery.data?.materials?.[0]?.id || '')
   ), [formState.materialId, materialsQuery.data]);
@@ -41,21 +69,39 @@ export function SellPage() {
     queryKey: ['preview-score', selectedMaterialId, formState.conditionLabel],
   });
 
-  const createListingMutation = useMutation({
-    mutationFn: () => apiRequest('/products', {
+  const saveListingMutation = useMutation({
+    mutationFn: () => apiRequest(listingId ? `/products/${listingId}` : '/products', {
       body: JSON.stringify({
         ...formState,
         materialId: Number(selectedMaterialId),
         price: Number(formState.price),
       }),
       headers: authHeaders(token),
-      method: 'POST',
+      method: listingId ? 'PUT' : 'POST',
     }),
     onSuccess: () => {
-      setFormState((current) => ({
-        ...defaultForm,
-        materialId: current.materialId,
-      }));
+      queryClient.invalidateQueries({ queryKey: ['products'] });
+      queryClient.invalidateQueries({ queryKey: ['profile', token] });
+      queryClient.invalidateQueries({ queryKey: ['dashboard', token] });
+
+      if (listingId) {
+        navigate('/account');
+        return;
+      }
+
+      setDraftState((current) => ({ ...defaultForm, materialId: current?.materialId || '' }));
+    },
+  });
+
+  const deleteListingMutation = useMutation({
+    mutationFn: () => apiRequest(`/products/${listingId}`, {
+      headers: authHeaders(token),
+      method: 'DELETE',
+    }),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['products'] });
+      queryClient.invalidateQueries({ queryKey: ['profile', token] });
+      navigate('/account');
     },
   });
 
@@ -67,41 +113,48 @@ export function SellPage() {
         <Sparkles className="mx-auto h-8 w-8 text-[#4e7f74]" />
         <h1 className="mt-4 font-heading text-4xl text-stone-900">Sign in before you list an item</h1>
         <p className="mx-auto mt-3 max-w-2xl text-stone-600">The real-time score preview is already wired to the backend. Log in to publish a listing and save the calculated water and CO2 impact.</p>
-        <Link to="/login" className="mt-6 inline-flex rounded-full bg-[#2f5d50] px-5 py-3 text-sm font-semibold text-white">Go to login</Link>
+        <Link to="/" className="mt-6 inline-flex rounded-full bg-[#2f5d50] px-5 py-3 text-sm font-semibold text-white">Go to landing page</Link>
       </section>
     );
   }
 
   return (
     <section className="grid gap-8 lg:grid-cols-[1.08fr_0.92fr]">
-      <form className="rounded-[2rem] border border-stone-300/60 bg-white/80 p-8 shadow-[0_20px_60px_-34px_rgba(55,45,32,0.45)] backdrop-blur" onSubmit={(event) => { event.preventDefault(); createListingMutation.mutate(); }}>
+      <form className="rounded-[2rem] border border-stone-300/60 bg-white/80 p-8 shadow-[0_20px_60px_-34px_rgba(55,45,32,0.45)] backdrop-blur" onSubmit={(event) => { event.preventDefault(); saveListingMutation.mutate(); }}>
         <p className="text-xs uppercase tracking-[0.35em] text-[#4e7f74]">Seller studio</p>
-        <h1 className="mt-3 font-heading text-4xl text-stone-900">List a garment with live sustainability feedback</h1>
+        <h1 className="mt-3 font-heading text-4xl text-stone-900">{listingId ? 'Edit your listing' : 'List a garment with live sustainability feedback'}</h1>
 
         <div className="mt-8 grid gap-5 md:grid-cols-2">
-          <Input label="Item title" value={formState.title} onChange={(value) => setFormState((current) => ({ ...current, title: value }))} placeholder="Used cotton work shirt" />
-          <Input label="Price" value={formState.price} onChange={(value) => setFormState((current) => ({ ...current, price: value }))} placeholder="34" />
-          <Select label="Category" value={formState.category} onChange={(value) => setFormState((current) => ({ ...current, category: value }))} options={['Tops', 'Outerwear', 'Dresses', 'Denim', 'Accessories']} />
-          <Select label="Condition" value={formState.conditionLabel} onChange={(value) => setFormState((current) => ({ ...current, conditionLabel: value }))} options={['Brand New', 'Like New', 'Gently Used', 'Worn']} />
+          <Input label="Item title" value={formState.title} onChange={(value) => setDraftState((current) => ({ ...(current || formState), title: value }))} placeholder="Used cotton work shirt" />
+          <Input label="Price" value={formState.price} onChange={(value) => setDraftState((current) => ({ ...(current || formState), price: value }))} placeholder="34" />
+          <Select label="Category" value={formState.category} onChange={(value) => setDraftState((current) => ({ ...(current || formState), category: value }))} options={['Tops', 'Outerwear', 'Dresses', 'Denim', 'Accessories']} />
+          <Select label="Condition" value={formState.conditionLabel} onChange={(value) => setDraftState((current) => ({ ...(current || formState), conditionLabel: value }))} options={['Brand New', 'Like New', 'Gently Used', 'Worn']} />
           <label className="block text-sm font-medium text-stone-700 md:col-span-2">
             <span className="mb-2 block">Material</span>
-            <select className="w-full rounded-2xl border border-stone-300 bg-[#faf6f0] px-4 py-3 outline-none" value={selectedMaterialId} onChange={(event) => setFormState((current) => ({ ...current, materialId: event.target.value }))}>
+            <select className="w-full rounded-2xl border border-stone-300 bg-[#faf6f0] px-4 py-3 outline-none" value={selectedMaterialId} onChange={(event) => setDraftState((current) => ({ ...(current || formState), materialId: event.target.value }))}>
               {(materialsQuery.data?.materials || []).map((material) => <option key={material.id} value={material.id}>{material.name}</option>)}
             </select>
           </label>
-          <Input label="Image URL" value={formState.imageUrl} onChange={(value) => setFormState((current) => ({ ...current, imageUrl: value }))} placeholder="Optional image link" />
+          <Input label="Image URL" value={formState.imageUrl} onChange={(value) => setDraftState((current) => ({ ...(current || formState), imageUrl: value }))} placeholder="Optional image link" />
           <label className="block text-sm font-medium text-stone-700 md:col-span-2">
             <span className="mb-2 block">Description</span>
-            <textarea className="min-h-32 w-full rounded-2xl border border-stone-300 bg-[#faf6f0] px-4 py-3 outline-none" value={formState.description} onChange={(event) => setFormState((current) => ({ ...current, description: event.target.value }))} placeholder="Share fit, wear notes, and why this piece deserves another cycle." />
+            <textarea className="min-h-32 w-full rounded-2xl border border-stone-300 bg-[#faf6f0] px-4 py-3 outline-none" value={formState.description} onChange={(event) => setDraftState((current) => ({ ...(current || formState), description: event.target.value }))} placeholder="Share fit, wear notes, and why this piece deserves another cycle." />
           </label>
         </div>
 
-        {createListingMutation.isError ? <p className="mt-4 text-sm text-rose-600">{createListingMutation.error.message}</p> : null}
-        {createListingMutation.isSuccess ? <p className="mt-4 text-sm text-emerald-700">Listing created successfully.</p> : null}
+        {saveListingMutation.isError ? <p className="mt-4 text-sm text-rose-600">{saveListingMutation.error.message}</p> : null}
+        {deleteListingMutation.isError ? <p className="mt-4 text-sm text-rose-600">{deleteListingMutation.error.message}</p> : null}
 
-        <button type="submit" disabled={createListingMutation.isPending} className="mt-6 rounded-full bg-[#2f5d50] px-5 py-3 text-sm font-semibold text-white transition hover:bg-[#244b41] disabled:opacity-60">
-          {createListingMutation.isPending ? 'Publishing...' : 'Publish listing'}
-        </button>
+        <div className="mt-6 flex flex-wrap gap-3">
+          <button type="submit" disabled={saveListingMutation.isPending} className="rounded-full bg-[#2f5d50] px-5 py-3 text-sm font-semibold text-white transition hover:bg-[#244b41] disabled:opacity-60">
+            {saveListingMutation.isPending ? (listingId ? 'Saving...' : 'Publishing...') : (listingId ? 'Save changes' : 'Publish listing')}
+          </button>
+          {listingId ? (
+            <button type="button" onClick={() => deleteListingMutation.mutate()} disabled={deleteListingMutation.isPending} className="rounded-full border border-rose-300 bg-white px-5 py-3 text-sm font-semibold text-rose-700 disabled:opacity-60">
+              {deleteListingMutation.isPending ? 'Deleting...' : 'Delete listing'}
+            </button>
+          ) : null}
+        </div>
       </form>
 
       <aside className="space-y-6 rounded-[2rem] border border-stone-300/60 bg-[linear-gradient(180deg,_rgba(255,255,255,0.85)_0%,_rgba(241,234,221,0.95)_100%)] p-8 shadow-[0_20px_60px_-34px_rgba(55,45,32,0.45)] backdrop-blur">
