@@ -12,30 +12,27 @@ ReWear is a PERN monorepo for the EcoThread Marketplace course project. It is a 
 
 ### Frontend
 
-- Marketplace homepage with earth-tone visual styling and live product feed
-- Product cards with real eco metrics, price, seller, material, and marketplace imagery
-- Product detail side sheet with purchase action
+- Public landing page at `/` with merged login and signup flow
+- Role-aware signup with `buyer` or `seller` account type
+- Authenticated marketplace at `/marketplace` with earth-tone styling and live product feed
+- Product cards with real eco metrics, seller info, category, material, and mock clothing imagery
 - Filterable marketplace feed by category, eco grade, and material
-- Seller listing form with real-time eco-score preview before submit
-- Login and signup flow backed by JWT auth
-- Demo account autofill for seller and buyer testing
+- Purchase confirmation page at `/purchase/:productId` for buyers
+- Seller listing studio at `/sell` with real-time eco-score preview before submit
+- Seller listing management from the profile page, including edit and delete for active listings
+- Buyer wishlist flow with save/remove actions and wishlist section on profile
 - Dedicated authenticated profile page at `/account`
-- Protected dashboard route for authenticated users
-- Public-only auth page that redirects logged-in users to their profile
-- Logout redirect to the landing/login page
-- Impact dashboard showing:
-  - total purchases
-  - total water saved
-  - total CO2 diverted
-  - unlocked sustainability badges
-  - purchase history
-  - quick purchase testing panel
+- Dedicated authenticated dashboard page at `/dashboard`
+- Role-aware UI:
+  - buyers see purchases, wishlist, impact, and badges
+  - sellers see listings, sales history, active inventory, and sales totals
+- Logout redirects back to the landing page
 - Session refresh from `/api/auth/me` so stored logins stay in sync with server data
 
 ### Backend
 
-- JWT authentication with signup, login, and current-user lookup
-- PostgreSQL schema for users, products, purchases, materials registry, badge definitions, and user badges
+- JWT authentication with signup, login, current-user lookup, and stored account role
+- PostgreSQL schema for users, products, purchases, materials registry, badge definitions, user badges, and wishlist items
 - Material registry seed data for sustainability calculations
 - Sustainability engine with:
   - condition weights
@@ -43,13 +40,13 @@ ReWear is a PERN monorepo for the EcoThread Marketplace course project. It is a 
   - A-E eco grade mapping
   - water saved calculation
   - CO2 diverted calculation
-- Product creation endpoint that calculates and stores sustainability metrics server-side
-- Marketplace listing endpoint with SQL join-based product/material/seller data
-- Product detail endpoint for individual listing views
-- Live preview endpoint for seller-side eco-score updates
+- Product create, update, delete, list, detail, and live preview endpoints
 - Purchase endpoint with transaction safety and row locking to prevent duplicate purchase races
-- Dashboard aggregation endpoint using SQL joins and sums
+- Wishlist create, delete, and fetch endpoints
+- Profile endpoint with role-aware activity summaries
+- Dashboard endpoint with buyer-specific and seller-specific aggregate data
 - Badge unlock syncing based on purchase count, water saved, CO2 diverted, and material-specific milestones
+- Backend role enforcement middleware for buyer-only and seller-only actions
 
 ### Demo and seed data
 
@@ -60,11 +57,13 @@ ReWear is a PERN monorepo for the EcoThread Marketplace course project. It is a 
 
 ## Current routes in the app
 
-- `/` - marketplace feed
-- `/sell` - seller listing form with live sustainability preview
-- `/login` - login/signup screen
-- `/account` - authenticated profile page with role/activity summary
-- `/dashboard` - authenticated impact dashboard
+- `/` - public landing page with merged login/signup
+- `/marketplace` - authenticated marketplace feed
+- `/sell` - seller-only listing form and listing edit page
+- `/purchase/:productId` - buyer-only purchase confirmation page
+- `/account` - authenticated profile page with role-specific activity
+- `/dashboard` - authenticated dashboard with role-specific metrics
+- `/login` - redirects to `/`
 
 ## API endpoints
 
@@ -77,7 +76,7 @@ Base URL: `http://localhost:4000/api`
 ### Auth
 
 - `POST /auth/signup`
-  - body: `fullName`, `email`, `password`
+  - body: `fullName`, `email`, `password`, `role`
   - returns JWT token and created user
 - `POST /auth/login`
   - body: `email`, `password`
@@ -97,11 +96,18 @@ Base URL: `http://localhost:4000/api`
   - body: `materialId`, `conditionLabel`
   - returns live sustainability preview metrics before listing submission
 - `POST /products`
-  - auth required
+  - auth required, seller only
   - body: `title`, `description`, `category`, `price`, `materialId`, `conditionLabel`, `imageUrl`
   - creates a product and stores calculated eco metrics
+- `PUT /products/:productId`
+  - auth required, seller only
+  - body: `title`, `description`, `category`, `price`, `materialId`, `conditionLabel`, `imageUrl`
+  - updates an active listing and recalculates stored sustainability metrics
+- `DELETE /products/:productId`
+  - auth required, seller only
+  - deletes an active listing owned by the seller
 - `GET /products`
-  - query params supported: `category`, `ecoScore`, `material`, `search`, `status`
+  - query params supported: `category`, `ecoScore`, `material`, `status`
   - returns marketplace feed items with joined seller and material data
 - `GET /products/:productId`
   - returns a single product detail record
@@ -109,18 +115,33 @@ Base URL: `http://localhost:4000/api`
 ### Purchases
 
 - `POST /purchases`
-  - auth required
+  - auth required, buyer only
   - body: `productId`
   - purchases an available item, marks it sold, updates impact totals, and syncs badges
+
+### Wishlist
+
+- `GET /wishlist`
+  - auth required, buyer only
+  - returns wishlist items for the current user
+- `POST /wishlist`
+  - auth required, buyer only
+  - body: `productId`
+  - saves a product to the user's wishlist
+- `DELETE /wishlist/:productId`
+  - auth required, buyer only
+  - removes a product from the user's wishlist
 
 ### Users
 
 - `GET /users/me/profile`
   - auth required
-  - returns profile details, listing counts, and recent listings
+  - returns profile details, account role, listing counts, recent listings, and recent purchases
 - `GET /users/me/dashboard`
   - auth required
-  - returns dashboard totals, purchase history, and unlocked badges
+  - returns role-aware dashboard data:
+    - buyers: purchases, impact totals, badges
+    - sellers: listings, sales history, active listing summaries, sales totals
 
 ## Database scripts
 
@@ -158,10 +179,11 @@ Base URL: `http://localhost:4000/api`
 
 1. Log in as the seller and create a new listing from `/sell`.
 2. Open the marketplace and confirm the listing appears with an eco badge and image.
-3. Sign out and log in as the buyer.
-4. Open a product from the marketplace or use the quick purchase panel on `/dashboard`.
-5. Purchase an available item.
-6. Confirm that purchase history, water saved, CO2 diverted, and badges update immediately.
+3. Confirm the seller profile and dashboard show listing and sales-oriented information.
+4. Sign out and log in as the buyer.
+5. Open a product from `/marketplace` or use the quick purchase panel on `/dashboard`.
+6. Purchase an available item and optionally save/remove wishlist items.
+7. Confirm that purchase history, water saved, CO2 diverted, wishlist, and badges update immediately.
 
 ## pgAdmin
 

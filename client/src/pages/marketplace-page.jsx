@@ -120,7 +120,7 @@ export function MarketplacePage() {
 
         <div className="grid gap-6 lg:grid-cols-2 xl:grid-cols-3">
           {(productsQuery.data?.products || []).map((product) => (
-            <button key={product.id} type="button" onClick={() => navigate(`/purchase/${product.id}`)} className="text-left">
+            <button key={product.id} type="button" onClick={() => navigate(product.seller.id === user?.id ? `/sell?listing=${product.id}` : `/purchase/${product.id}`)} className="text-left">
               <ProductCard product={{ ...product, isWishlisted: wishlistIds.has(product.id) }} />
             </button>
           ))}

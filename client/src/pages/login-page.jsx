@@ -1,5 +1,5 @@
 import { useMutation } from '@tanstack/react-query';
-import { ArrowRight, Leaf, LockKeyhole, Mail, Recycle, Shirt, UserRound } from 'lucide-react';
+import { Leaf, LockKeyhole, Mail, Recycle, Shirt, UserRound } from 'lucide-react';
 import { useState } from 'react';
 import { Navigate, useNavigate } from 'react-router-dom';
 
@@ -135,15 +135,9 @@ export function LoginPage() {
       </section>
 
       <section className="rounded-[2rem] border border-stone-300/60 bg-white/75 p-8 shadow-[0_18px_50px_-30px_rgba(55,45,32,0.45)] backdrop-blur sm:p-10">
-        <div className="flex flex-col gap-4 md:flex-row md:items-end md:justify-between">
-          <div>
-            <p className="text-xs uppercase tracking-[0.35em] text-[#4e7f74]">How it works</p>
-            <h2 className="mt-3 font-heading text-4xl text-stone-900">Join once, then shop, list, and track your impact.</h2>
-          </div>
-          <button type="button" onClick={() => setMode('signup')} className="inline-flex items-center gap-2 rounded-full bg-stone-900 px-5 py-3 text-sm font-semibold text-white">
-            Get started
-            <ArrowRight className="h-4 w-4" />
-          </button>
+        <div>
+          <p className="text-xs uppercase tracking-[0.35em] text-[#4e7f74]">How it works</p>
+          <h2 className="mt-3 font-heading text-4xl text-stone-900">Join once, then shop, list, and track your impact.</h2>
         </div>
 
         <div className="mt-8 grid gap-4 md:grid-cols-3">

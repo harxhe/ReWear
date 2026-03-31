@@ -23,7 +23,7 @@ export function PurchasePage() {
 
   const purchaseMutation = useMutation({
     mutationFn: () => apiRequest('/purchases', {
-      body: JSON.stringify({ productId: Number(productId) }),
+      body: JSON.stringify({ productId: Number(productQuery.data?.product?.id ?? productId) }),
       headers: authHeaders(token),
       method: 'POST',
     }),
@@ -40,11 +40,11 @@ export function PurchasePage() {
   const wishlistMutation = useMutation({
     mutationFn: (method) => method === 'POST'
       ? apiRequest('/wishlist', {
-          body: JSON.stringify({ productId: Number(productId) }),
+          body: JSON.stringify({ productId: Number(productQuery.data?.product?.id ?? productId) }),
           headers: authHeaders(token),
           method: 'POST',
         })
-      : apiRequest(`/wishlist/${productId}`, {
+      : apiRequest(`/wishlist/${Number(productQuery.data?.product?.id ?? productId)}`, {
           headers: authHeaders(token),
           method: 'DELETE',
         }),

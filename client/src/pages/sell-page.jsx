@@ -23,6 +23,7 @@ export function SellPage() {
   const listingId = searchParams.get('listing');
   const { isAuthenticated, token } = useAuth();
   const [draftState, setDraftState] = useState(null);
+  const [successMessage, setSuccessMessage] = useState('');
 
   const materialsQuery = useQuery({
     queryFn: () => apiRequest('/materials'),
@@ -80,6 +81,7 @@ export function SellPage() {
       method: listingId ? 'PUT' : 'POST',
     }),
     onSuccess: () => {
+      setSuccessMessage(listingId ? 'Listing updated successfully.' : 'Listing published successfully and is now live in the marketplace.');
       queryClient.invalidateQueries({ queryKey: ['products'] });
       queryClient.invalidateQueries({ queryKey: ['profile', token] });
       queryClient.invalidateQueries({ queryKey: ['dashboard', token] });
@@ -99,6 +101,7 @@ export function SellPage() {
       method: 'DELETE',
     }),
     onSuccess: () => {
+      setSuccessMessage('');
       queryClient.invalidateQueries({ queryKey: ['products'] });
       queryClient.invalidateQueries({ queryKey: ['profile', token] });
       navigate('/account');
@@ -125,23 +128,24 @@ export function SellPage() {
         <h1 className="mt-3 font-heading text-4xl text-stone-900">{listingId ? 'Edit your listing' : 'List a garment with live sustainability feedback'}</h1>
 
         <div className="mt-8 grid gap-5 md:grid-cols-2">
-          <Input label="Item title" value={formState.title} onChange={(value) => setDraftState((current) => ({ ...(current || formState), title: value }))} placeholder="Used cotton work shirt" />
-          <Input label="Price" value={formState.price} onChange={(value) => setDraftState((current) => ({ ...(current || formState), price: value }))} placeholder="34" />
-          <Select label="Category" value={formState.category} onChange={(value) => setDraftState((current) => ({ ...(current || formState), category: value }))} options={['Tops', 'Outerwear', 'Dresses', 'Denim', 'Accessories']} />
-          <Select label="Condition" value={formState.conditionLabel} onChange={(value) => setDraftState((current) => ({ ...(current || formState), conditionLabel: value }))} options={['Brand New', 'Like New', 'Gently Used', 'Worn']} />
+          <Input label="Item title" value={formState.title} onChange={(value) => { setSuccessMessage(''); setDraftState((current) => ({ ...(current || formState), title: value })); }} placeholder="Used cotton work shirt" />
+          <Input label="Price" value={formState.price} onChange={(value) => { setSuccessMessage(''); setDraftState((current) => ({ ...(current || formState), price: value })); }} placeholder="34" />
+          <Select label="Category" value={formState.category} onChange={(value) => { setSuccessMessage(''); setDraftState((current) => ({ ...(current || formState), category: value })); }} options={['Tops', 'Outerwear', 'Dresses', 'Denim', 'Accessories']} />
+          <Select label="Condition" value={formState.conditionLabel} onChange={(value) => { setSuccessMessage(''); setDraftState((current) => ({ ...(current || formState), conditionLabel: value })); }} options={['Brand New', 'Like New', 'Gently Used', 'Worn']} />
           <label className="block text-sm font-medium text-stone-700 md:col-span-2">
             <span className="mb-2 block">Material</span>
-            <select className="w-full rounded-2xl border border-stone-300 bg-[#faf6f0] px-4 py-3 outline-none" value={selectedMaterialId} onChange={(event) => setDraftState((current) => ({ ...(current || formState), materialId: event.target.value }))}>
+            <select className="w-full rounded-2xl border border-stone-300 bg-[#faf6f0] px-4 py-3 outline-none" value={selectedMaterialId} onChange={(event) => { setSuccessMessage(''); setDraftState((current) => ({ ...(current || formState), materialId: event.target.value })); }}>
               {(materialsQuery.data?.materials || []).map((material) => <option key={material.id} value={material.id}>{material.name}</option>)}
             </select>
           </label>
-          <Input label="Image URL" value={formState.imageUrl} onChange={(value) => setDraftState((current) => ({ ...(current || formState), imageUrl: value }))} placeholder="Optional image link" />
+          <Input label="Image URL" value={formState.imageUrl} onChange={(value) => { setSuccessMessage(''); setDraftState((current) => ({ ...(current || formState), imageUrl: value })); }} placeholder="Optional image link" />
           <label className="block text-sm font-medium text-stone-700 md:col-span-2">
             <span className="mb-2 block">Description</span>
-            <textarea className="min-h-32 w-full rounded-2xl border border-stone-300 bg-[#faf6f0] px-4 py-3 outline-none" value={formState.description} onChange={(event) => setDraftState((current) => ({ ...(current || formState), description: event.target.value }))} placeholder="Share fit, wear notes, and why this piece deserves another cycle." />
+            <textarea className="min-h-32 w-full rounded-2xl border border-stone-300 bg-[#faf6f0] px-4 py-3 outline-none" value={formState.description} onChange={(event) => { setSuccessMessage(''); setDraftState((current) => ({ ...(current || formState), description: event.target.value })); }} placeholder="Share fit, wear notes, and why this piece deserves another cycle." />
           </label>
         </div>
 
+        {successMessage ? <p className="mt-4 text-sm text-emerald-700">{successMessage}</p> : null}
         {saveListingMutation.isError ? <p className="mt-4 text-sm text-rose-600">{saveListingMutation.error.message}</p> : null}
         {deleteListingMutation.isError ? <p className="mt-4 text-sm text-rose-600">{deleteListingMutation.error.message}</p> : null}
 

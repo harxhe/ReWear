@@ -59,7 +59,7 @@ export function AccountPage() {
       </section>
 
       <section className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
-        <ProfileMetric icon={<Store className="h-5 w-5 text-[#8b5a32]" />} label="Total listings" value={profile.totalListings} />
+        {isSeller ? <ProfileMetric icon={<Store className="h-5 w-5 text-[#8b5a32]" />} label="Total listings" value={profile.totalListings} /> : null}
         {isBuyer ? <ProfileMetric icon={<ShoppingBag className="h-5 w-5 text-[#2f5d50]" />} label="Total purchases" value={profile.totalPurchases} /> : null}
         {isSeller ? <ProfileMetric icon={<ShoppingBag className="h-5 w-5 text-[#2f5d50]" />} label="Sold listings" value={profile.soldListings} /> : null}
         {isBuyer ? <ProfileMetric icon={<Droplets className="h-5 w-5 text-[#4e7f74]" />} label="Water saved" value={`${Math.round(profile.totalWaterSavedLiters)} L`} /> : null}
@@ -113,7 +113,7 @@ export function AccountPage() {
                   <div className="flex items-start justify-between gap-3">
                     <div>
                       <p className="font-semibold text-stone-900">{listing.title}</p>
-                      <p className="text-sm text-stone-600">{listing.category} · Eco {listing.ecoScoreGrade}</p>
+                      <p className="text-sm text-stone-600">{listing.category}</p>
                     </div>
                     <span className="rounded-full bg-white px-3 py-1 text-xs font-semibold uppercase tracking-[0.18em] text-stone-600">
                       {listing.status}
@@ -156,29 +156,6 @@ export function AccountPage() {
           </div>
         )}
       </section>
-
-      {isBuyer && isSeller ? (
-        <section className="rounded-[2rem] border border-stone-300/60 bg-white/80 p-8 shadow-[0_18px_50px_-30px_rgba(55,45,32,0.45)] backdrop-blur">
-          <div className="flex items-center gap-3">
-            <ShoppingBag className="h-5 w-5 text-[#4e7f74]" />
-            <h2 className="font-heading text-3xl text-stone-900">Recent purchases</h2>
-          </div>
-          <div className="mt-6 grid gap-4 lg:grid-cols-2">
-            {profile.recentPurchases.length === 0 ? <p className="text-stone-600">You have not purchased anything yet.</p> : profile.recentPurchases.map((purchase) => (
-              <div key={purchase.id} className="flex gap-4 rounded-[1.5rem] border border-stone-300/60 bg-[#faf6f0] p-4">
-                <div className="h-20 w-20 shrink-0 overflow-hidden rounded-2xl bg-stone-200">
-                  {purchase.imageUrl ? <img src={purchase.imageUrl} alt={purchase.title} className="h-full w-full object-cover" /> : null}
-                </div>
-                <div className="min-w-0 flex-1">
-                  <p className="font-semibold text-stone-900">{purchase.title}</p>
-                  <p className="text-sm text-stone-600">{purchase.materialName} · Eco {purchase.ecoScoreGrade}</p>
-                  <p className="mt-2 text-sm text-stone-700">${purchase.price.toFixed(2)}</p>
-                </div>
-              </div>
-            ))}
-          </div>
-        </section>
-      ) : null}
 
       {isBuyer ? (
         <section className="rounded-[2rem] border border-stone-300/60 bg-white/80 p-8 shadow-[0_18px_50px_-30px_rgba(55,45,32,0.45)] backdrop-blur">
