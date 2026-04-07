@@ -63,7 +63,7 @@ export function SellPage() {
     queryFn: () => apiRequest('/products/preview-score', {
       body: JSON.stringify({
         conditionLabel: formState.conditionLabel,
-        materialId: Number(selectedMaterialId),
+        materialId: selectedMaterialId,
       }),
       method: 'POST',
     }),
@@ -74,7 +74,7 @@ export function SellPage() {
     mutationFn: () => apiRequest(listingId ? `/products/${listingId}` : '/products', {
       body: JSON.stringify({
         ...formState,
-        materialId: Number(selectedMaterialId),
+        materialId: selectedMaterialId,
         price: Number(formState.price),
       }),
       headers: authHeaders(token),

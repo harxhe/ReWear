@@ -10,20 +10,24 @@ export function PurchasePage() {
   const queryClient = useQueryClient();
   const { productId } = useParams();
   const { refreshUser, token, user } = useAuth();
+  const canBuy = user?.role === 'buyer';
 
   const productQuery = useQuery({
     queryFn: () => apiRequest(`/products/${productId}`),
     queryKey: ['product-detail', productId],
   });
 
+  const resolvedProductId = productQuery.data?.product?.id || productId;
+
   const wishlistQuery = useQuery({
+    enabled: canBuy,
     queryFn: () => apiRequest('/wishlist', { headers: authHeaders(token) }),
     queryKey: ['wishlist', token],
   });
 
   const purchaseMutation = useMutation({
     mutationFn: () => apiRequest('/purchases', {
-      body: JSON.stringify({ productId: Number(productQuery.data?.product?.id ?? productId) }),
+      body: JSON.stringify({ productId: resolvedProductId }),
       headers: authHeaders(token),
       method: 'POST',
     }),
@@ -40,11 +44,11 @@ export function PurchasePage() {
   const wishlistMutation = useMutation({
     mutationFn: (method) => method === 'POST'
       ? apiRequest('/wishlist', {
-          body: JSON.stringify({ productId: Number(productQuery.data?.product?.id ?? productId) }),
+          body: JSON.stringify({ productId: resolvedProductId }),
           headers: authHeaders(token),
           method: 'POST',
         })
-      : apiRequest(`/wishlist/${Number(productQuery.data?.product?.id ?? productId)}`, {
+      : apiRequest(`/wishlist/${resolvedProductId}`, {
           headers: authHeaders(token),
           method: 'DELETE',
         }),
@@ -63,7 +67,7 @@ export function PurchasePage() {
 
   const product = productQuery.data.product;
   const isOwner = product.seller.id === user?.id;
-  const isWishlisted = (wishlistQuery.data?.wishlist || []).some((item) => item.id === product.id);
+  const isWishlisted = canBuy && (wishlistQuery.data?.wishlist || []).some((item) => item.id === product.id);
 
   return (
     <section className="grid gap-8 lg:grid-cols-[1.05fr_0.95fr]">
@@ -106,9 +110,9 @@ export function PurchasePage() {
           <p className="text-sm uppercase tracking-[0.25em] text-[#4e7f74]">Actions</p>
           <div className="mt-5 space-y-3">
             {!isOwner ? (
-              <button type="button" onClick={() => purchaseMutation.mutate()} disabled={purchaseMutation.isPending || product.status !== 'available'} className="inline-flex w-full items-center justify-center gap-2 rounded-full bg-[#2f5d50] px-5 py-3 text-sm font-semibold text-white disabled:opacity-60">
+              <button type="button" onClick={() => { if (canBuy) purchaseMutation.mutate(); }} disabled={!canBuy || purchaseMutation.isPending || product.status !== 'available'} className="inline-flex w-full items-center justify-center gap-2 rounded-full bg-[#2f5d50] px-5 py-3 text-sm font-semibold text-white disabled:opacity-60">
                 <ShoppingBag className="h-4 w-4" />
-                {purchaseMutation.isPending ? 'Purchasing...' : 'Confirm purchase'}
+                {canBuy ? (purchaseMutation.isPending ? 'Purchasing...' : 'Confirm purchase') : 'Purchase unavailable for seller account'}
               </button>
             ) : (
               <button type="button" onClick={() => navigate(`/sell?listing=${product.id}`)} className="inline-flex w-full items-center justify-center rounded-full bg-stone-900 px-5 py-3 text-sm font-semibold text-white">
@@ -116,11 +120,15 @@ export function PurchasePage() {
               </button>
             )}
 
-            {!isOwner ? (
+            {!isOwner && canBuy ? (
               <button type="button" onClick={() => wishlistMutation.mutate(isWishlisted ? 'DELETE' : 'POST')} disabled={wishlistMutation.isPending} className="inline-flex w-full items-center justify-center gap-2 rounded-full border border-stone-300 bg-white px-5 py-3 text-sm font-semibold text-stone-800 disabled:opacity-60">
                 <Heart className={`h-4 w-4 ${isWishlisted ? 'fill-current text-rose-600' : ''}`} />
                 {isWishlisted ? 'Remove from wishlist' : 'Save to wishlist'}
               </button>
+            ) : null}
+
+            {!isOwner && !canBuy ? (
+              <p className="text-sm text-stone-600">You can view the full listing details and description here, but seller accounts cannot edit listings they do not own or buy them.</p>
             ) : null}
 
             {purchaseMutation.isError ? <p className="text-sm text-rose-600">{purchaseMutation.error.message}</p> : null}

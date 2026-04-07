@@ -51,7 +51,7 @@ function App() {
         <Route
           path="/purchase/:productId"
           element={(
-            <ProtectedRoute allowedRoles={['buyer']}>
+            <ProtectedRoute>
               <PurchasePage />
             </ProtectedRoute>
           )}
