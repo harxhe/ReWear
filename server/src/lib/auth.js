@@ -25,7 +25,7 @@ export function requireAuth(request, _response, next) {
     const token = header.replace('Bearer ', '');
     const payload = jwt.verify(token, env.jwtSecret);
     request.auth = {
-      userId: Number(payload.sub),
+      userId: String(payload.sub),
     };
     next();
   } catch {

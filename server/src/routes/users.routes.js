@@ -1,113 +1,59 @@
 import { Router } from 'express';
 
-import { query } from '../db/query.js';
 import { asyncHandler } from '../lib/async-handler.js';
 import { requireAuth } from '../lib/auth.js';
-import { syncUserBadges, getUnlockedBadges } from '../services/badge.service.js';
+import { Product } from '../models/product.model.js';
+import { Purchase } from '../models/purchase.model.js';
+import { User } from '../models/user.model.js';
+import { getUnlockedBadges, syncUserBadges } from '../services/badge.service.js';
 
 const usersRouter = Router();
 
 usersRouter.get('/me/profile', requireAuth, asyncHandler(async (request, response) => {
-  const userResult = await query(
-    `
-      SELECT id, full_name, email, avatar_url, total_water_saved_liters, total_co2_diverted_kg, created_at
-      , role
-      FROM users
-      WHERE id = $1
-    `,
-    [request.auth.userId],
-  );
-
-  const listingSummaryResult = await query(
-    `
-      SELECT
-        COUNT(*)::int AS total_listings,
-        COUNT(*) FILTER (WHERE status = 'available')::int AS available_listings,
-        COUNT(*) FILTER (WHERE status = 'sold')::int AS sold_listings
-      FROM products
-      WHERE seller_id = $1
-    `,
-    [request.auth.userId],
-  );
-
-  const purchaseSummaryResult = await query(
-    `
-      SELECT COUNT(*)::int AS total_purchases
-      FROM purchases
-      WHERE buyer_id = $1
-    `,
-    [request.auth.userId],
-  );
-
-  const recentListingsResult = await query(
-    `
-      SELECT id, title, category, status, eco_score_grade, image_url, price, created_at
-      FROM products
-      WHERE seller_id = $1
-      ORDER BY created_at DESC
-      LIMIT 6
-    `,
-    [request.auth.userId],
-  );
-
-  const recentPurchasesResult = await query(
-    `
-      SELECT
-        p.id,
-        p.purchase_price,
-        p.purchased_at,
-        pr.title,
-        pr.category,
-        pr.eco_score_grade,
-        pr.image_url,
-        mr.name AS material_name
-      FROM purchases p
-      INNER JOIN products pr ON pr.id = p.product_id
-      INNER JOIN materials_registry mr ON mr.id = pr.material_id
-      WHERE p.buyer_id = $1
-      ORDER BY p.purchased_at DESC
-      LIMIT 6
-    `,
-    [request.auth.userId],
-  );
-
-  const listingSummary = listingSummaryResult.rows[0];
-  const purchaseSummary = purchaseSummaryResult.rows[0];
-  const user = userResult.rows[0];
+  const user = await User.findById(request.auth.userId);
+  const recentListings = await Product.find({ sellerId: request.auth.userId })
+    .sort({ createdAt: -1 })
+    .limit(6)
+    .populate('materialId', 'name category');
+  const listingDocs = await Product.find({ sellerId: request.auth.userId }).select('status');
+  const recentPurchases = await Purchase.find({ buyerId: request.auth.userId })
+    .sort({ purchasedAt: -1 })
+    .limit(6)
+    .populate({ path: 'productId', populate: { path: 'materialId', select: 'name' } });
 
   response.json({
     profile: {
-      availableListings: Number(listingSummary.available_listings),
-      avatarUrl: user.avatar_url,
-      createdAt: user.created_at,
+      availableListings: listingDocs.filter((item) => item.status === 'available').length,
+      avatarUrl: user.avatarUrl,
+      createdAt: user.createdAt,
       email: user.email,
-      fullName: user.full_name,
+      fullName: user.fullName,
       role: user.role,
-      recentListings: recentListingsResult.rows.map((row) => ({
+      recentListings: recentListings.map((row) => ({
         category: row.category,
-        createdAt: row.created_at,
-        ecoScoreGrade: row.eco_score_grade,
-        id: row.id,
-        imageUrl: row.image_url,
+        createdAt: row.createdAt,
+        ecoScoreGrade: row.ecoScoreGrade,
+        id: String(row._id),
+        imageUrl: row.imageUrl,
         price: Number(row.price),
         status: row.status,
         title: row.title,
       })),
-      recentPurchases: recentPurchasesResult.rows.map((row) => ({
-        category: row.category,
-        ecoScoreGrade: row.eco_score_grade,
-        id: row.id,
-        imageUrl: row.image_url,
-        materialName: row.material_name,
-        price: Number(row.purchase_price),
-        purchasedAt: row.purchased_at,
-        title: row.title,
+      recentPurchases: recentPurchases.filter((entry) => entry.productId).map((row) => ({
+        category: row.productId.category,
+        ecoScoreGrade: row.productId.ecoScoreGrade,
+        id: String(row._id),
+        imageUrl: row.productId.imageUrl,
+        materialName: row.productId.materialId.name,
+        price: Number(row.purchasePrice),
+        purchasedAt: row.purchasedAt,
+        title: row.productId.title,
       })),
-      soldListings: Number(listingSummary.sold_listings),
-      totalCo2DivertedKg: Number(user.total_co2_diverted_kg),
-      totalListings: Number(listingSummary.total_listings),
-      totalPurchases: Number(purchaseSummary.total_purchases),
-      totalWaterSavedLiters: Number(user.total_water_saved_liters),
+      soldListings: listingDocs.filter((item) => item.status === 'sold').length,
+      totalCo2DivertedKg: Number(user.totalCo2DivertedKg),
+      totalListings: listingDocs.length,
+      totalPurchases: await Purchase.countDocuments({ buyerId: request.auth.userId }),
+      totalWaterSavedLiters: Number(user.totalWaterSavedLiters),
     },
   });
 }));
@@ -115,156 +61,63 @@ usersRouter.get('/me/profile', requireAuth, asyncHandler(async (request, respons
 usersRouter.get('/me/dashboard', requireAuth, asyncHandler(async (request, response) => {
   await syncUserBadges(request.auth.userId);
 
-  const userResult = await query(
-    `
-      SELECT role
-      FROM users
-      WHERE id = $1
-    `,
-    [request.auth.userId],
-  );
-
-  const totalsResult = await query(
-    `
-      SELECT
-        COUNT(p.id)::int AS purchase_count,
-        COALESCE(SUM(p.purchase_price), 0) AS total_spent,
-        COALESCE(SUM(p.water_saved_liters), 0) AS total_water_saved_liters,
-        COALESCE(SUM(p.co2_diverted_kg), 0) AS total_co2_diverted_kg
-      FROM purchases p
-      WHERE p.buyer_id = $1
-    `,
-    [request.auth.userId],
-  );
-
-  const purchasesResult = await query(
-    `
-      SELECT
-        p.id,
-        p.purchase_price,
-        p.water_saved_liters,
-        p.co2_diverted_kg,
-        p.purchased_at,
-        pr.title,
-        pr.category,
-        pr.condition_label,
-        pr.eco_score_grade,
-        mr.name AS material_name
-      FROM purchases p
-      INNER JOIN products pr ON pr.id = p.product_id
-      INNER JOIN materials_registry mr ON mr.id = pr.material_id
-      WHERE p.buyer_id = $1
-      ORDER BY p.purchased_at DESC
-    `,
-    [request.auth.userId],
-  );
-
-  const sellerTotalsResult = await query(
-    `
-      SELECT
-        COUNT(*)::int AS total_listings,
-        COUNT(*) FILTER (WHERE status = 'available')::int AS active_listings,
-        COUNT(*) FILTER (WHERE status = 'sold')::int AS sold_listings,
-        COALESCE(SUM(price) FILTER (WHERE status = 'sold'), 0) AS total_sales_value
-      FROM products
-      WHERE seller_id = $1
-    `,
-    [request.auth.userId],
-  );
-
-  const sellerSalesResult = await query(
-    `
-      SELECT
-        pr.id,
-        pr.title,
-        pr.category,
-        pr.eco_score_grade,
-        pr.image_url,
-        pr.price,
-        pr.condition_label,
-        mr.name AS material_name,
-        p.purchased_at
-      FROM products pr
-      INNER JOIN purchases p ON p.product_id = pr.id
-      INNER JOIN materials_registry mr ON mr.id = pr.material_id
-      WHERE pr.seller_id = $1
-      ORDER BY p.purchased_at DESC
-    `,
-    [request.auth.userId],
-  );
-
-  const activeListingsResult = await query(
-    `
-      SELECT
-        pr.id,
-        pr.title,
-        pr.category,
-        pr.eco_score_grade,
-        pr.image_url,
-        pr.price,
-        pr.condition_label,
-        mr.name AS material_name,
-        pr.created_at
-      FROM products pr
-      INNER JOIN materials_registry mr ON mr.id = pr.material_id
-      WHERE pr.seller_id = $1 AND pr.status = 'available'
-      ORDER BY pr.created_at DESC
-      LIMIT 6
-    `,
-    [request.auth.userId],
-  );
-
-  const totals = totalsResult.rows[0];
-  const sellerTotals = sellerTotalsResult.rows[0];
+  const user = await User.findById(request.auth.userId).select('role totalWaterSavedLiters totalCo2DivertedKg');
+  const purchases = await Purchase.find({ buyerId: request.auth.userId })
+    .sort({ purchasedAt: -1 })
+    .populate({ path: 'productId', populate: { path: 'materialId', select: 'name' } });
+  const listings = await Product.find({ sellerId: request.auth.userId }).sort({ createdAt: -1 }).populate('materialId', 'name');
+  const soldProductIds = listings.filter((item) => item.status === 'sold').map((item) => item._id);
+  const sales = await Purchase.find({ productId: { $in: soldProductIds } })
+    .sort({ purchasedAt: -1 })
+    .populate({ path: 'productId', populate: { path: 'materialId', select: 'name' } });
   const badges = await getUnlockedBadges(request.auth.userId);
-  const role = userResult.rows[0]?.role || 'buyer';
 
   response.json({
     dashboard: {
-      activeListings: Number(sellerTotals.active_listings),
-      activeListingItems: activeListingsResult.rows.map((row) => ({
+      activeListings: listings.filter((item) => item.status === 'available').length,
+      activeListingItems: listings.filter((item) => item.status === 'available').slice(0, 6).map((row) => ({
         category: row.category,
-        conditionLabel: row.condition_label,
-        createdAt: row.created_at,
-        ecoScoreGrade: row.eco_score_grade,
-        id: row.id,
-        imageUrl: row.image_url,
-        materialName: row.material_name,
+        conditionLabel: row.conditionLabel,
+        createdAt: row.createdAt,
+        ecoScoreGrade: row.ecoScoreGrade,
+        id: String(row._id),
+        imageUrl: row.imageUrl,
+        materialName: row.materialId.name,
         price: Number(row.price),
         title: row.title,
       })),
       badges,
-      purchaseCount: totals.purchase_count,
-      purchases: purchasesResult.rows.map((row) => ({
-        id: row.id,
-        category: row.category,
-        co2DivertedKg: Number(row.co2_diverted_kg),
-        conditionLabel: row.condition_label,
-        ecoScoreGrade: row.eco_score_grade,
-        materialName: row.material_name,
-        price: Number(row.purchase_price),
-        purchasedAt: row.purchased_at,
-        title: row.title,
-        waterSavedLiters: Number(row.water_saved_liters),
+      purchaseCount: purchases.length,
+      purchases: purchases.filter((entry) => entry.productId).map((row) => ({
+        id: String(row._id),
+        category: row.productId.category,
+        co2DivertedKg: Number(row.co2DivertedKg),
+        conditionLabel: row.productId.conditionLabel,
+        ecoScoreGrade: row.productId.ecoScoreGrade,
+        materialName: row.productId.materialId.name,
+        price: Number(row.purchasePrice),
+        purchasedAt: row.purchasedAt,
+        title: row.productId.title,
+        waterSavedLiters: Number(row.waterSavedLiters),
       })),
-      recentSales: sellerSalesResult.rows.map((row) => ({
-        category: row.category,
-        conditionLabel: row.condition_label,
-        ecoScoreGrade: row.eco_score_grade,
-        id: row.id,
-        imageUrl: row.image_url,
-        materialName: row.material_name,
-        price: Number(row.price),
-        soldAt: row.purchased_at,
-        title: row.title,
+      recentSales: sales.filter((entry) => entry.productId).map((row) => ({
+        category: row.productId.category,
+        conditionLabel: row.productId.conditionLabel,
+        ecoScoreGrade: row.productId.ecoScoreGrade,
+        id: String(row.productId._id),
+        imageUrl: row.productId.imageUrl,
+        materialName: row.productId.materialId.name,
+        price: Number(row.purchasePrice),
+        soldAt: row.purchasedAt,
+        title: row.productId.title,
       })),
-      role,
-      soldListingCount: Number(sellerTotals.sold_listings),
-      totalListings: Number(sellerTotals.total_listings),
-      totalSalesValue: Number(sellerTotals.total_sales_value),
-      totalCo2DivertedKg: Number(totals.total_co2_diverted_kg),
-      totalSpent: Number(totals.total_spent),
-      totalWaterSavedLiters: Number(totals.total_water_saved_liters),
+      role: user.role,
+      soldListingCount: listings.filter((item) => item.status === 'sold').length,
+      totalListings: listings.length,
+      totalSalesValue: sales.reduce((sum, row) => sum + Number(row.purchasePrice), 0),
+      totalCo2DivertedKg: Number(user.totalCo2DivertedKg),
+      totalSpent: purchases.reduce((sum, row) => sum + Number(row.purchasePrice), 0),
+      totalWaterSavedLiters: Number(user.totalWaterSavedLiters),
     },
   });
 }));

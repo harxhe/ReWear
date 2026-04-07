@@ -1,107 +1,66 @@
-import { query } from '../db/query.js';
+import { BadgeDefinition } from '../models/badge-definition.model.js';
+import { Product } from '../models/product.model.js';
+import { Purchase } from '../models/purchase.model.js';
+import { UserBadge } from '../models/user-badge.model.js';
 
-function createQueryRunner(db = { query }) {
-  return (text, params = []) => db.query(text, params);
-}
-
-async function getUserBadgeStats(userId, db) {
-  const runQuery = createQueryRunner(db);
-  const result = await runQuery(
-    `
-      SELECT
-        COUNT(p.id)::int AS purchase_count,
-        COALESCE(SUM(p.water_saved_liters), 0) AS total_water_saved_liters,
-        COALESCE(SUM(p.co2_diverted_kg), 0) AS total_co2_diverted_kg
-      FROM purchases p
-      WHERE p.buyer_id = $1
-    `,
-    [userId],
-  );
+async function getUserBadgeStats(userId, session) {
+  const purchases = await Purchase.find({ buyerId: userId }).session(session || null).lean();
 
   return {
-    purchaseCount: result.rows[0].purchase_count,
-    totalCo2DivertedKg: Number(result.rows[0].total_co2_diverted_kg),
-    totalWaterSavedLiters: Number(result.rows[0].total_water_saved_liters),
+    purchaseCount: purchases.length,
+    totalCo2DivertedKg: purchases.reduce((sum, purchase) => sum + Number(purchase.co2DivertedKg || 0), 0),
+    totalWaterSavedLiters: purchases.reduce((sum, purchase) => sum + Number(purchase.waterSavedLiters || 0), 0),
   };
 }
 
-async function getMaterialPurchaseCount(userId, materialName, db) {
-  const runQuery = createQueryRunner(db);
-  const result = await runQuery(
-    `
-      SELECT COUNT(*)::int AS purchase_count
-      FROM purchases p
-      INNER JOIN products pr ON pr.id = p.product_id
-      INNER JOIN materials_registry mr ON mr.id = pr.material_id
-      WHERE p.buyer_id = $1 AND mr.name = $2
-    `,
-    [userId, materialName],
-  );
+async function getMaterialPurchaseCount(userId, materialName, session) {
+  const purchases = await Purchase.find({ buyerId: userId }).select('productId').session(session || null).lean();
+  const productIds = purchases.map((purchase) => purchase.productId);
 
-  return result.rows[0].purchase_count;
+  return Product.countDocuments({ _id: { $in: productIds }, materialNameCache: materialName }).session(session || null);
 }
 
 function badgeUnlocked(badge, stats, materialPurchaseCount) {
-  switch (badge.rule_type) {
+  switch (badge.ruleType) {
     case 'purchase_count':
-      return stats.purchaseCount >= Number(badge.rule_threshold);
+      return stats.purchaseCount >= Number(badge.ruleThreshold);
     case 'water_saved':
-      return stats.totalWaterSavedLiters >= Number(badge.rule_threshold);
+      return stats.totalWaterSavedLiters >= Number(badge.ruleThreshold);
     case 'co2_diverted':
-      return stats.totalCo2DivertedKg >= Number(badge.rule_threshold);
+      return stats.totalCo2DivertedKg >= Number(badge.ruleThreshold);
     case 'material_purchase_count':
-      return materialPurchaseCount >= Number(badge.rule_threshold);
+      return materialPurchaseCount >= Number(badge.ruleThreshold);
     default:
       return false;
   }
 }
 
-export async function syncUserBadges(userId, db) {
-  const runQuery = createQueryRunner(db);
-  const badgeDefinitionsResult = await runQuery(
-    `
-      SELECT id, slug, title, description, rule_type, rule_threshold, material_name
-      FROM badge_definitions
-      ORDER BY id ASC
-    `,
-  );
+export async function syncUserBadges(userId, session) {
+  const badgeDefinitions = await BadgeDefinition.find().sort({ createdAt: 1 }).session(session || null).lean();
+  const stats = await getUserBadgeStats(userId, session);
 
-  const stats = await getUserBadgeStats(userId, db);
-
-  for (const badge of badgeDefinitionsResult.rows) {
-    const materialPurchaseCount = badge.material_name
-      ? await getMaterialPurchaseCount(userId, badge.material_name, db)
+  for (const badge of badgeDefinitions) {
+    const materialPurchaseCount = badge.materialName
+      ? await getMaterialPurchaseCount(userId, badge.materialName, session)
       : 0;
 
     if (badgeUnlocked(badge, stats, materialPurchaseCount)) {
-      await runQuery(
-        `
-          INSERT INTO user_badges (user_id, badge_id)
-          VALUES ($1, $2)
-          ON CONFLICT (user_id, badge_id) DO NOTHING
-        `,
-        [userId, badge.id],
+      await UserBadge.updateOne(
+        { badgeId: badge._id, userId },
+        { $setOnInsert: { unlockedAt: new Date() } },
+        { upsert: true, session },
       );
     }
   }
 }
 
 export async function getUnlockedBadges(userId) {
-  const result = await query(
-    `
-      SELECT bd.slug, bd.title, bd.description, ub.unlocked_at
-      FROM user_badges ub
-      INNER JOIN badge_definitions bd ON bd.id = ub.badge_id
-      WHERE ub.user_id = $1
-      ORDER BY ub.unlocked_at ASC
-    `,
-    [userId],
-  );
+  const userBadges = await UserBadge.find({ userId }).populate('badgeId').sort({ unlockedAt: 1 });
 
-  return result.rows.map((row) => ({
-    slug: row.slug,
-    title: row.title,
-    description: row.description,
-    unlockedAt: row.unlocked_at,
+  return userBadges.map((entry) => ({
+    slug: entry.badgeId.slug,
+    title: entry.badgeId.title,
+    description: entry.badgeId.description,
+    unlockedAt: entry.unlockedAt,
   }));
 }

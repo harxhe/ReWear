@@ -1,103 +1,60 @@
+import mongoose from 'mongoose';
 import { Router } from 'express';
 
-import { query } from '../db/query.js';
 import { asyncHandler } from '../lib/async-handler.js';
 import { requireAuth } from '../lib/auth.js';
 import { HttpError } from '../lib/http-error.js';
 import { requireAccountRole } from '../middleware/require-account-role.js';
+import { Product } from '../models/product.model.js';
+import { WishlistItem } from '../models/wishlist-item.model.js';
+import { mapProduct } from '../utils/mappers.js';
 
 const wishlistRouter = Router();
 
-function mapWishlistRow(row) {
-  return {
-    category: row.category,
-    co2DivertedKg: Number(row.co2_diverted_kg),
-    conditionLabel: row.condition_label,
-    ecoScoreGrade: row.eco_score_grade,
-    ecoScoreNumeric: Number(row.eco_score_numeric),
-    id: row.id,
-    imageUrl: row.image_url,
-    material: {
-      id: row.material_id,
-      name: row.material_name,
-    },
-    price: Number(row.price),
-    seller: {
-      id: row.seller_id,
-      name: row.seller_name,
-    },
-    status: row.status,
-    title: row.title,
-    waterSavedLiters: Number(row.water_saved_liters),
-  };
-}
-
 wishlistRouter.get('/', requireAuth, requireAccountRole(['buyer']), asyncHandler(async (request, response) => {
-  const result = await query(
-    `
-      SELECT
-        p.id,
-        p.title,
-        p.category,
-        p.price,
-        p.condition_label,
-        p.eco_score_grade,
-        p.eco_score_numeric,
-        p.water_saved_liters,
-        p.co2_diverted_kg,
-        p.image_url,
-        p.status,
-        u.id AS seller_id,
-        u.full_name AS seller_name,
-        mr.id AS material_id,
-        mr.name AS material_name
-      FROM wishlist_items wi
-      INNER JOIN products p ON p.id = wi.product_id
-      INNER JOIN users u ON u.id = p.seller_id
-      INNER JOIN materials_registry mr ON mr.id = p.material_id
-      WHERE wi.user_id = $1
-      ORDER BY wi.created_at DESC
-    `,
-    [request.auth.userId],
-  );
+  const items = await WishlistItem.find({ userId: request.auth.userId })
+    .sort({ createdAt: -1 })
+    .populate({
+      path: 'productId',
+      populate: [
+        { path: 'sellerId', select: 'fullName' },
+        { path: 'materialId', select: 'name category' },
+      ],
+    });
 
   response.json({
-    wishlist: result.rows.map(mapWishlistRow),
+    wishlist: items.filter((entry) => entry.productId).map((entry) => mapProduct(entry.productId)),
   });
 }));
 
 wishlistRouter.post('/', requireAuth, requireAccountRole(['buyer']), asyncHandler(async (request, response) => {
-  const { productId } = request.body;
+  const { productId } = request.body || {};
 
-  if (!productId) {
+  if (!productId || !mongoose.isValidObjectId(productId)) {
     throw new HttpError(400, 'A product id is required to save to wishlist.');
   }
 
-  const productResult = await query('SELECT id, seller_id FROM products WHERE id = $1', [productId]);
+  const product = await Product.findById(productId).select('sellerId');
 
-  if (productResult.rowCount === 0) {
+  if (!product) {
     throw new HttpError(404, 'Product was not found.');
   }
 
-  if (Number(productResult.rows[0].seller_id) === request.auth.userId) {
+  if (String(product.sellerId) === request.auth.userId) {
     throw new HttpError(400, 'You cannot wishlist your own listing.');
   }
 
-  await query(
-    `
-      INSERT INTO wishlist_items (user_id, product_id)
-      VALUES ($1, $2)
-      ON CONFLICT (user_id, product_id) DO NOTHING
-    `,
-    [request.auth.userId, productId],
+  await WishlistItem.updateOne(
+    { productId, userId: request.auth.userId },
+    { $setOnInsert: { createdAt: new Date() } },
+    { upsert: true },
   );
 
   response.status(201).json({ success: true });
 }));
 
 wishlistRouter.delete('/:productId', requireAuth, requireAccountRole(['buyer']), asyncHandler(async (request, response) => {
-  await query('DELETE FROM wishlist_items WHERE user_id = $1 AND product_id = $2', [request.auth.userId, request.params.productId]);
-
+  await WishlistItem.deleteOne({ productId: request.params.productId, userId: request.auth.userId });
   response.json({ success: true });
 }));
 

@@ -5,7 +5,7 @@ ReWear is a PERN monorepo for the EcoThread Marketplace course project. It is a 
 ## Tech stack
 
 - `client/` - React, Vite, React Router, TanStack Query, Tailwind CSS v4, Lucide React
-- `server/` - Node.js, Express, PostgreSQL, JWT auth, bcrypt
+- `server/` - Node.js, Express, MongoDB, Mongoose, JWT auth, bcrypt
 - root - npm workspaces and shared scripts
 
 ## Implemented features
@@ -32,7 +32,7 @@ ReWear is a PERN monorepo for the EcoThread Marketplace course project. It is a 
 ### Backend
 
 - JWT authentication with signup, login, current-user lookup, and stored account role
-- PostgreSQL schema for users, products, purchases, materials registry, badge definitions, user badges, and wishlist items
+- MongoDB collections for users, products, purchases, materials, badge definitions, user badges, and wishlist items
 - Material registry seed data for sustainability calculations
 - Sustainability engine with:
   - condition weights
@@ -145,10 +145,10 @@ Base URL: `http://localhost:4000/api`
 
 ## Database scripts
 
-- `npm run db:setup --workspace server` - creates all marketplace tables
+- `npm run db:setup --workspace server` - initializes MongoDB collections and indexes
 - `npm run db:seed --workspace server` - seeds materials and badge definitions
 - `npm run db:seed-demo --workspace server` - seeds demo buyer/seller accounts and sample listings
-- `npm run db:reset --workspace server` - drops the ReWear tables
+- `npm run db:reset --workspace server` - drops the ReWear MongoDB database
 
 ## App scripts
 
@@ -162,7 +162,7 @@ Base URL: `http://localhost:4000/api`
 ## Getting started
 
 1. Install dependencies with `npm install`.
-2. Copy `.env.example` to `.env` and update the PostgreSQL connection string.
+2. Copy `.env.example` to `.env` and update the MongoDB connection string.
 3. Create the schema with `npm run db:setup --workspace server`.
 4. Seed the material registry with `npm run db:seed --workspace server`.
 5. Seed demo users and listings with `npm run db:seed-demo --workspace server`.
@@ -185,9 +185,9 @@ Base URL: `http://localhost:4000/api`
 6. Purchase an available item and optionally save/remove wishlist items.
 7. Confirm that purchase history, water saved, CO2 diverted, wishlist, and badges update immediately.
 
-## pgAdmin
+## MongoDB
 
-Use the same credentials from `.env` when registering a PostgreSQL server in pgAdmin. Once connected, create or open the `rewear` database and run the repo scripts against it.
+The default local connection string is `mongodb://127.0.0.1:27017/rewear`. ReWear now uses MongoDB for all app data, including auth, products, purchases, badges, and wishlists.
 
 ## Design references
 

@@ -2,6 +2,7 @@ import cors from 'cors';
 import express from 'express';
 
 import { env } from './config/env.js';
+import { connectToDatabase } from './db/mongoose.js';
 import { errorHandler } from './middleware/error-handler.js';
 import { apiRouter } from './routes/index.js';
 
@@ -22,6 +23,8 @@ app.get('/api/health', (_request, response) => {
 });
 
 app.use(errorHandler);
+
+await connectToDatabase();
 
 app.listen(port, () => {
   console.log(`ReWear API listening on port ${port}`);
