@@ -40,7 +40,7 @@ export function LandingPage() {
             Style that leaves a smaller footprint.
           </div>
 
-          <h1 className="font-heading text-6xl leading-[1.1] tracking-tight text-[#1b3626] md:text-[5.5rem]">
+          <h1 className="font-heading text-6xl leading-[1.05] tracking-tight text-[#1b3626] md:text-[7rem]">
             Wear it again.<br />
             <em className="font-normal italic">Love it longer.</em>
           </h1>

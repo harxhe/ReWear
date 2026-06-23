@@ -15,8 +15,13 @@
   font-synthesis: none;
   line-height: 1.5;
   text-rendering: optimizeLegibility;
+}
+
+html {
+  font-size: 112.5%;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+  scroll-behavior: smooth;
 }
 
 * {
