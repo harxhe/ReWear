@@ -17,11 +17,26 @@
   text-rendering: optimizeLegibility;
 }
 
+html, body {
+  overflow-x: hidden;
+  width: 100%;
+  max-width: 100vw;
+}
+
 html {
-  font-size: 112.5%;
+  font-size: 100%;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   scroll-behavior: smooth;
+}
+
+@media (min-width: 1024px) {
+  html {
+    font-size: 112.5%;
+  }
+  html.auth-pages {
+    font-size: 90%;
+  }
 }
 
 * {

@@ -9,9 +9,9 @@ export function AppShell() {
   const { isAuthenticated, signOut, user } = useAuth();
 
   useEffect(() => {
-    document.documentElement.style.fontSize = '90%';
+    document.documentElement.classList.add('auth-pages');
     return () => {
-      document.documentElement.style.fontSize = '';
+      document.documentElement.classList.remove('auth-pages');
     };
   }, []);
 

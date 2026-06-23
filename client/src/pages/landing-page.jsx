@@ -11,7 +11,7 @@ export function LandingPage() {
   }
 
   return (
-    <div className="bg-[#f8f6f0]">
+    <div className="min-h-screen w-full overflow-x-hidden bg-[#f8f6f0] selection:bg-[#203c2b] selection:text-white">
       {/* HERO SECTION */}
       <div className="relative flex min-h-screen flex-col items-center justify-center">
         <header className="absolute left-0 top-0 z-10 flex w-full items-center justify-between px-6 py-6 md:px-12">
@@ -25,13 +25,13 @@ export function LandingPage() {
             <a href="#impact" className="text-sm font-medium text-stone-600 transition hover:text-[#203c2b] hover:underline underline-offset-4">Impact</a>
           </nav>
           
-          <Link to="/login" className="rounded-full bg-[#1b3626] px-6 py-2.5 text-sm font-semibold !text-white transition hover:bg-[#122419]">
+          <Link to="/login" className="rounded-full bg-[#1b3626] px-4 py-2 sm:px-6 sm:py-2.5 text-xs sm:text-sm font-semibold !text-white transition hover:bg-[#122419]">
             Start swapping &rarr;
           </Link>
         </header>
 
         <main className="mx-auto flex w-full max-w-4xl flex-col items-center justify-center px-4 text-center">
-          <div className="mb-10 flex items-center gap-3 rounded-full border border-white bg-white/60 px-5 py-2 text-sm font-semibold text-stone-600 shadow-sm backdrop-blur-md">
+          <div className="mb-8 sm:mb-10 flex flex-wrap items-center justify-center gap-2 sm:gap-3 rounded-full border border-white bg-white/60 px-4 sm:px-5 py-2 text-xs sm:text-sm font-semibold text-stone-600 shadow-sm backdrop-blur-md">
             <div className="flex -space-x-2">
               <div className="h-6 w-6 rounded-full border-2 border-[#f8f6f0] bg-[#829986]"></div>
               <div className="h-6 w-6 rounded-full border-2 border-[#f8f6f0] bg-[#a3b8a6]"></div>
@@ -40,7 +40,7 @@ export function LandingPage() {
             Style that leaves a smaller footprint.
           </div>
 
-          <h1 className="font-heading text-6xl leading-[1.05] tracking-tight text-[#1b3626] md:text-[7rem]">
+          <h1 className="font-heading text-4xl sm:text-5xl leading-[1.05] tracking-tight text-[#1b3626] md:text-[7rem]">
             Wear it again.<br />
             <em className="font-normal italic">Love it longer.</em>
           </h1>
@@ -83,7 +83,7 @@ export function LandingPage() {
 
           {/* Eco-Score */}
           <div id="ecoscore" className="grid gap-12 md:grid-cols-2 md:items-center">
-            <div className="order-2 md:order-1 aspect-square rounded-3xl bg-[#556b5d] p-8 text-white flex flex-col justify-center">
+            <div className="order-2 md:order-1 md:aspect-square rounded-3xl bg-[#556b5d] p-6 sm:p-8 text-white flex flex-col justify-center">
                <p className="text-[10px] font-bold tracking-widest text-white/60 uppercase">The Grading Scale</p>
                <div className="mt-8 space-y-4">
                   <div className="flex items-center justify-between border-b border-white/20 pb-4">
@@ -120,7 +120,7 @@ export function LandingPage() {
           {/* Impact Metrics */}
           <div id="impact" className="text-center">
             <p className="text-[10px] font-bold tracking-widest text-[#556b5d] uppercase">Measurable Impact</p>
-            <h2 className="mt-4 font-heading text-4xl text-stone-900">Every purchase counts.</h2>
+            <h2 className="mt-4 font-heading text-3xl sm:text-4xl text-stone-900">Every purchase counts.</h2>
             <p className="mx-auto mt-4 max-w-xl text-stone-600">When you buy a piece on ReWear, you aren't just saving money. You are actively diverting carbon emissions and saving water.</p>
             
             <div className="mt-12 grid gap-8 sm:grid-cols-2 max-w-3xl mx-auto">
@@ -147,7 +147,7 @@ export function LandingPage() {
       {/* FOOTER CTA */}
       <footer className="bg-[#1b3626] py-32 px-6 text-center text-white">
          <Leaf className="mx-auto h-8 w-8 text-white/50 mb-8" />
-         <h2 className="font-heading text-5xl md:text-6xl max-w-2xl mx-auto leading-tight">Ready to refresh your closet?</h2>
+         <h2 className="font-heading text-4xl sm:text-5xl md:text-6xl max-w-2xl mx-auto leading-tight">Ready to refresh your closet?</h2>
          <p className="mt-6 text-white/70 max-w-xl mx-auto text-lg">Join thousands of others in the circular fashion movement.</p>
          <Link to="/login" className="mt-12 inline-block rounded-full bg-white px-10 py-4 text-sm font-semibold !text-[#1b3626] transition hover:bg-stone-100">
             Create an account today
