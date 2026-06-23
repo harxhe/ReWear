@@ -1,10 +1,9 @@
 import { useQuery } from '@tanstack/react-query';
-import { Filter, Leaf, Sparkles } from 'lucide-react';
+import { ChevronDown, Sparkles } from 'lucide-react';
 import { useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 
 import { ProductCard } from '../components/product-card.jsx';
-import { SectionHeading } from '../components/section-heading.jsx';
 import { apiRequest, authHeaders } from '../lib/api.js';
 import { useAuth } from '../state/auth-context.js';
 
@@ -39,7 +38,8 @@ export function MarketplacePage() {
     queryKey: ['products', filters],
   });
 
-  const categories = useMemo(() => ['Tops', 'Outerwear', 'Dresses', 'Denim', 'Accessories'], []);
+  const categories = useMemo(() => ['Tops', 'Bottoms', 'Dresses', 'Outerwear', 'Knitwear', 'Accessories', 'Footwear', 'Denim'], []);
+  const ecoGrades = useMemo(() => ['A', 'B', 'C', 'D', 'E'], []);
 
   const wishlistQuery = useQuery({
     enabled: user?.role === 'buyer',
@@ -50,90 +50,115 @@ export function MarketplacePage() {
   const wishlistIds = new Set((wishlistQuery.data?.wishlist || []).map((item) => item.id));
 
   return (
-    <div className="space-y-8">
-      <section className="rounded-[2rem] border border-stone-300/60 bg-[linear-gradient(135deg,_rgba(47,93,80,0.96)_0%,_rgba(95,130,103,0.92)_48%,_rgba(193,168,125,0.88)_100%)] px-6 py-8 text-white shadow-[0_24px_70px_-34px_rgba(29,51,42,0.7)] sm:px-10 sm:py-12">
-        <SectionHeading
-          eyebrow="Circular fashion"
-          title="Shop second-hand pieces with visible climate value"
-          description="Browse listings scored by material science and circularity. Every card shows real water savings and carbon diversion before you buy."
-          action={(
-            <div className="inline-flex items-center gap-3 rounded-full bg-white/15 px-5 py-3 text-sm font-medium backdrop-blur">
-              <Sparkles className="h-4 w-4" />
-              Live eco-score marketplace
-            </div>
-          )}
-        />
-
-        <div className="mt-8 grid gap-4 sm:grid-cols-3">
-          <div className="rounded-[1.75rem] border border-white/20 bg-white/10 p-5 backdrop-blur">
-            <p className="text-sm uppercase tracking-[0.25em] text-white/70">Mission</p>
-            <p className="mt-2 text-lg font-medium">Make circular fashion measurable, not vague.</p>
+    <div className="space-y-16 py-8">
+      <section className="flex flex-col gap-8 md:flex-row md:items-start md:justify-between">
+        <div className="max-w-2xl">
+          <p className="flex items-center gap-2 text-xs font-semibold tracking-widest text-[#556b5d] uppercase">
+            <Sparkles className="h-3.5 w-3.5" /> Today's Archive
+          </p>
+          <h1 className="mt-6 font-heading text-6xl leading-tight text-stone-900 md:text-7xl">
+            A wardrobe that has <em className="italic text-[#556b5d]">already lived</em> — and is ready for its next chapter.
+          </h1>
+        </div>
+        <div className="rounded-3xl bg-[#f0eae1] p-8 md:w-80">
+          <p className="text-xs font-semibold tracking-widest text-stone-500 uppercase">Reading the signal</p>
+          <div className="mt-4 flex gap-1">
+            <div className="h-8 w-full rounded-l-md bg-[#556b5d] text-center text-xs font-bold leading-8 text-white">A</div>
+            <div className="h-8 w-full bg-[#6b826b] text-center text-xs font-bold leading-8 text-white">B</div>
+            <div className="h-8 w-full bg-[#c1a68d] text-center text-xs font-bold leading-8 text-white">C</div>
+            <div className="h-8 w-full bg-[#c88f7b] text-center text-xs font-bold leading-8 text-white">D</div>
+            <div className="h-8 w-full rounded-r-md bg-[#b0705b] text-center text-xs font-bold leading-8 text-white">E</div>
           </div>
-          <div className="rounded-[1.75rem] border border-white/20 bg-white/10 p-5 backdrop-blur">
-            <p className="text-sm uppercase tracking-[0.25em] text-white/70">Signals</p>
-            <p className="mt-2 text-lg font-medium">Material registry + condition bonus + transparent joins.</p>
-          </div>
-          <div className="rounded-[1.75rem] border border-white/20 bg-white/10 p-5 backdrop-blur">
-            <p className="text-sm uppercase tracking-[0.25em] text-white/70">Outcome</p>
-            <p className="mt-2 text-lg font-medium">A feed where sustainability is visible on every listing.</p>
-          </div>
+          <p className="mt-4 text-xs text-stone-600 leading-relaxed">
+            A is best-in-class (low water, low CO₂). E means usable, but resource-heavy. We never hide the score.
+          </p>
         </div>
       </section>
 
-      <section className="rounded-[2rem] border border-stone-300/60 bg-white/70 p-6 shadow-[0_20px_60px_-34px_rgba(55,45,32,0.5)] backdrop-blur sm:p-8">
-        <div className="flex items-center gap-3 text-stone-800">
-          <Filter className="h-5 w-5 text-[#4e7f74]" />
-          <h2 className="font-heading text-2xl">Filter the marketplace</h2>
-        </div>
-        <div className="mt-6 grid gap-4 md:grid-cols-3">
-          <select className="rounded-2xl border border-stone-300 bg-[#faf6f0] px-4 py-3 outline-none" value={filters.category} onChange={(event) => setFilters((current) => ({ ...current, category: event.target.value }))}>
-            <option value="">All categories</option>
-            {categories.map((category) => <option key={category} value={category}>{category}</option>)}
-          </select>
-          <select className="rounded-2xl border border-stone-300 bg-[#faf6f0] px-4 py-3 outline-none" value={filters.ecoScore} onChange={(event) => setFilters((current) => ({ ...current, ecoScore: event.target.value }))}>
-            <option value="">All eco grades</option>
-            {['A', 'B', 'C', 'D', 'E'].map((grade) => <option key={grade} value={grade}>{grade}</option>)}
-          </select>
-          <select className="rounded-2xl border border-stone-300 bg-[#faf6f0] px-4 py-3 outline-none" value={filters.material} onChange={(event) => setFilters((current) => ({ ...current, material: event.target.value }))}>
-            <option value="">All materials</option>
-            {(materialsQuery.data?.materials || []).map((material) => <option key={material.id} value={material.name}>{material.name}</option>)}
-          </select>
-        </div>
-      </section>
-
-      <section className="space-y-4">
-        <div className="flex items-center justify-between">
+      <div className="grid gap-12 lg:grid-cols-[240px_1fr]">
+        <aside className="space-y-10 lg:sticky lg:top-24 lg:max-h-[calc(100vh-6rem)] lg:overflow-y-auto">
           <div>
-            <p className="text-sm uppercase tracking-[0.28em] text-[#4e7f74]">Marketplace feed</p>
-            <h2 className="mt-2 font-heading text-3xl text-stone-900">Fresh circular listings</h2>
+            <h2 className="flex items-center gap-2 text-xs font-bold tracking-widest text-stone-500 uppercase">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M4 21v-7"/><path d="M4 10V3"/><path d="M12 21v-9"/><path d="M12 8V3"/><path d="M20 21v-5"/><path d="M20 12V3"/><path d="M1 14h6"/><path d="M9 8h6"/><path d="M17 16h6"/></svg>
+              Filters
+            </h2>
           </div>
-          <div className="rounded-full bg-white/70 px-4 py-2 text-sm text-stone-600">
-            {productsQuery.data?.products?.length || 0} items
+
+          <div className="space-y-4">
+            <h3 className="text-[10px] font-bold tracking-widest text-stone-400 uppercase">Category</h3>
+            <div className="flex flex-wrap gap-2">
+              <button onClick={() => setFilters(c => ({ ...c, category: '' }))} className={`rounded-full border border-stone-200 px-4 py-1.5 text-xs transition ${!filters.category ? 'bg-stone-800 text-white border-stone-800' : 'bg-white text-stone-600 hover:bg-stone-50'}`}>All</button>
+              {categories.map((cat) => (
+                <button key={cat} onClick={() => setFilters(c => ({ ...c, category: cat }))} className={`rounded-full border border-stone-200 px-4 py-1.5 text-xs transition ${filters.category === cat ? 'bg-stone-800 text-white border-stone-800' : 'bg-white text-stone-600 hover:bg-stone-50'}`}>
+                  {cat}
+                </button>
+              ))}
+            </div>
           </div>
-        </div>
 
-        {productsQuery.isLoading ? <FeedState message="Loading marketplace listings..." /> : null}
-        {productsQuery.isError ? <FeedState message="The feed could not load. Start the API and try again." tone="error" /> : null}
-        {!productsQuery.isLoading && !productsQuery.isError && productsQuery.data?.products?.length === 0 ? (
-          <FeedState message="No products yet. Sign in and list the first circular piece from the sell page." />
-        ) : null}
+          <div className="space-y-4">
+            <h3 className="text-[10px] font-bold tracking-widest text-stone-400 uppercase">Eco Grade</h3>
+            <div className="flex gap-1">
+              {ecoGrades.map((grade) => (
+                <button 
+                  key={grade} 
+                  onClick={() => setFilters(c => ({ ...c, ecoScore: filters.ecoScore === grade ? '' : grade }))}
+                  className={`h-10 flex-1 text-xs font-bold transition ${filters.ecoScore === grade ? 'ring-2 ring-stone-900 ring-offset-2 ring-offset-[#f8f6f0]' : 'opacity-90 hover:opacity-100'} ${grade === 'A' ? 'bg-[#556b5d] text-white rounded-l-md' : grade === 'B' ? 'bg-[#6b826b] text-white' : grade === 'C' ? 'bg-[#c1a68d] text-white' : grade === 'D' ? 'bg-[#c88f7b] text-white' : 'bg-[#b0705b] text-white rounded-r-md'}`}
+                >
+                  {grade}
+                </button>
+              ))}
+            </div>
+          </div>
 
-        <div className="grid gap-6 lg:grid-cols-2 xl:grid-cols-3">
-          {(productsQuery.data?.products || []).map((product) => (
-            <button key={product.id} type="button" onClick={() => navigate(product.seller.id === user?.id ? `/sell?listing=${product.id}` : `/purchase/${product.id}`)} className="text-left">
-              <ProductCard product={{ ...product, isWishlisted: wishlistIds.has(product.id) }} />
-            </button>
-          ))}
-        </div>
-      </section>
+          <div className="space-y-4">
+            <h3 className="text-[10px] font-bold tracking-widest text-stone-400 uppercase">Material</h3>
+            <div className="relative">
+              <select className="w-full appearance-none rounded-full border border-stone-200 bg-white px-5 py-2.5 text-sm text-stone-600 outline-none transition focus:border-stone-400" value={filters.material} onChange={(event) => setFilters((current) => ({ ...current, material: event.target.value }))}>
+                <option value="">All materials</option>
+                {(materialsQuery.data?.materials || []).map((material) => <option key={material.id} value={material.name}>{material.name}</option>)}
+              </select>
+              <ChevronDown className="absolute right-4 top-1/2 -translate-y-1/2 h-4 w-4 text-stone-400 pointer-events-none" />
+            </div>
+          </div>
+        </aside>
+
+        <section>
+          <div className="mb-6 flex items-end justify-between border-b border-stone-200 pb-4">
+            <p className="font-heading text-3xl text-stone-800">
+              {productsQuery.data?.products?.length || 0} <span className="font-sans text-sm font-normal text-stone-500">pieces available</span>
+            </p>
+            <div className="relative">
+               <select className="appearance-none rounded-full border border-stone-200 bg-white pl-4 pr-10 py-1.5 text-xs text-stone-600 outline-none">
+                 <option>Best eco-score</option>
+                 <option>Newest</option>
+               </select>
+               <ChevronDown className="absolute right-3 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-stone-400 pointer-events-none" />
+            </div>
+          </div>
+
+          {productsQuery.isLoading ? <FeedState message="Curating the archive..." /> : null}
+          {productsQuery.isError ? <FeedState message="The archive could not load. Start the API and try again." tone="error" /> : null}
+          {!productsQuery.isLoading && !productsQuery.isError && productsQuery.data?.products?.length === 0 ? (
+            <FeedState message="No pieces found matching your criteria." />
+          ) : null}
+
+          <div className="grid gap-x-6 gap-y-12 sm:grid-cols-2 xl:grid-cols-3">
+            {(productsQuery.data?.products || []).map((product) => (
+              <div key={product.id} onClick={() => navigate(product.seller.id === user?.id ? `/sell?listing=${product.id}` : `/purchase/${product.id}`)}>
+                <ProductCard product={{ ...product, isWishlisted: wishlistIds.has(product.id) }} />
+              </div>
+            ))}
+          </div>
+        </section>
+      </div>
     </div>
   );
 }
 
 function FeedState({ message, tone = 'default' }) {
   return (
-    <div className={`rounded-[2rem] border px-6 py-10 text-center ${tone === 'error' ? 'border-rose-200 bg-rose-50 text-rose-700' : 'border-stone-300/60 bg-white/70 text-stone-600'}`}>
-      <Leaf className="mx-auto mb-3 h-6 w-6" />
+    <div className={`rounded-2xl border px-6 py-16 text-center ${tone === 'error' ? 'border-rose-100 bg-rose-50 text-rose-600' : 'border-stone-200 bg-white/50 text-stone-500'}`}>
       <p>{message}</p>
     </div>
   );

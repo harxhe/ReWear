@@ -34,121 +34,112 @@ export function AccountPage() {
   const { profile } = profileQuery.data;
   const isBuyer = profile.role === 'buyer';
   const isSeller = profile.role === 'seller';
+  const firstInitial = profile.fullName?.[0] || 'U';
 
   return (
-    <div className="space-y-8">
-      <section className="rounded-[2rem] border border-stone-300/60 bg-[linear-gradient(135deg,_rgba(47,93,80,0.96)_0%,_rgba(95,130,103,0.92)_58%,_rgba(217,185,130,0.86)_100%)] p-8 text-white shadow-[0_24px_70px_-34px_rgba(29,51,42,0.75)] sm:p-10">
-        <div className="flex flex-col gap-6 md:flex-row md:items-end md:justify-between">
-          <div>
-            <p className="text-xs uppercase tracking-[0.35em] text-white/70">Account profile</p>
-            <h1 className="mt-3 font-heading text-5xl">{profile.fullName}</h1>
-            <p className="mt-3 text-lg text-white/85">{profile.email}</p>
-            <div className="mt-5 inline-flex rounded-full bg-white/15 px-4 py-2 text-sm font-semibold uppercase tracking-[0.2em] text-white">
-              {profile.role}
-            </div>
-            <p className="mt-4 max-w-2xl text-sm text-white/80">
-              {profile.role === 'seller' ? 'Your seller account focuses on active listings and completed sales.' : null}
-              {profile.role === 'buyer' ? 'Your buyer account focuses on purchases, wishlist tracking, and sustainability impact.' : null}
-            </p>
+    <div className="space-y-16 py-8">
+      <section className="flex flex-col gap-8 md:flex-row md:items-end md:justify-between border-b border-stone-200 pb-12">
+        <div className="flex items-center gap-6">
+          <div className="flex h-24 w-24 items-center justify-center rounded-full bg-[#c88f7b] text-4xl font-semibold text-white">
+            {firstInitial}
           </div>
-          <div className="rounded-[1.5rem] border border-white/20 bg-white/10 p-5 backdrop-blur">
-            <p className="text-sm uppercase tracking-[0.25em] text-white/70">Member since</p>
-            <p className="mt-2 text-2xl font-semibold">{new Date(profile.createdAt).toLocaleDateString()}</p>
+          <div>
+            <h1 className="font-heading text-5xl text-stone-900">{profile.fullName}</h1>
+            <p className="mt-2 text-stone-600">{profile.email}</p>
+            <div className="mt-4 inline-flex items-center gap-2">
+              <span className="rounded-full border border-stone-200 px-3 py-1 text-xs font-bold uppercase tracking-widest text-stone-500">
+                {profile.role}
+              </span>
+              <span className="text-xs text-stone-400">
+                Member since {new Date(profile.createdAt).getFullYear()}
+              </span>
+            </div>
           </div>
         </div>
       </section>
 
-      <section className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
-        {isSeller ? <ProfileMetric icon={<Store className="h-5 w-5 text-[#8b5a32]" />} label="Total listings" value={profile.totalListings} /> : null}
-        {isBuyer ? <ProfileMetric icon={<ShoppingBag className="h-5 w-5 text-[#2f5d50]" />} label="Total purchases" value={profile.totalPurchases} /> : null}
-        {isSeller ? <ProfileMetric icon={<ShoppingBag className="h-5 w-5 text-[#2f5d50]" />} label="Sold listings" value={profile.soldListings} /> : null}
-        {isBuyer ? <ProfileMetric icon={<Droplets className="h-5 w-5 text-[#4e7f74]" />} label="Water saved" value={`${Math.round(profile.totalWaterSavedLiters)} L`} /> : null}
-        {isSeller ? <ProfileMetric icon={<Droplets className="h-5 w-5 text-[#4e7f74]" />} label="Active listings" value={profile.availableListings} /> : null}
-        {isBuyer ? <ProfileMetric icon={<Recycle className="h-5 w-5 text-[#8c5b43]" />} label="CO2 diverted" value={`${profile.totalCo2DivertedKg.toFixed(1)} kg`} /> : null}
+      <section className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+        {isSeller ? <ProfileMetric icon={<Store className="h-4 w-4" />} label="Total listings" value={profile.totalListings} /> : null}
+        {isBuyer ? <ProfileMetric icon={<ShoppingBag className="h-4 w-4" />} label="Total purchases" value={profile.totalPurchases} /> : null}
+        {isSeller ? <ProfileMetric icon={<ShoppingBag className="h-4 w-4" />} label="Sold listings" value={profile.soldListings} /> : null}
+        {isBuyer ? <ProfileMetric icon={<Droplets className="h-4 w-4" />} label="Water saved" value={`${Math.round(profile.totalWaterSavedLiters).toLocaleString()} L`} /> : null}
+        {isSeller ? <ProfileMetric icon={<Droplets className="h-4 w-4" />} label="Active listings" value={profile.availableListings} /> : null}
+        {isBuyer ? <ProfileMetric icon={<Recycle className="h-4 w-4" />} label="CO₂ diverted" value={`${profile.totalCo2DivertedKg.toFixed(1)} kg`} /> : null}
       </section>
 
-      <section className="grid gap-8 lg:grid-cols-[0.95fr_1.05fr]">
-        <div className="rounded-[2rem] border border-stone-300/60 bg-white/80 p-8 shadow-[0_18px_50px_-30px_rgba(55,45,32,0.45)] backdrop-blur">
-          <div className="flex items-center gap-3">
-            <Store className="h-5 w-5 text-[#4e7f74]" />
-            <h2 className="font-heading text-3xl text-stone-900">Marketplace activity</h2>
-          </div>
-          <div className="mt-6 space-y-4 text-stone-700">
+      <section className="grid gap-8 lg:grid-cols-2">
+        <div className="rounded-3xl border border-stone-200 bg-white p-8">
+          <h2 className="font-heading text-2xl text-stone-800">Activity Overview</h2>
+          <div className="mt-8 space-y-4 text-stone-700">
             {isSeller ? (
-              <div className="rounded-[1.5rem] bg-[#faf6f0] p-4">
-                <p className="font-semibold text-stone-900">Seller activity</p>
-                <p className="mt-2">{profile.availableListings} active listings and {profile.soldListings} sold listings.</p>
+              <div className="flex items-center justify-between border-b border-stone-100 pb-4">
+                <p className="font-sans text-sm font-semibold text-stone-900">Seller activity</p>
+                <p className="text-sm text-stone-500">{profile.availableListings} active &middot; {profile.soldListings} sold</p>
               </div>
             ) : null}
             {isBuyer ? (
-              <div className="rounded-[1.5rem] bg-[#faf6f0] p-4">
-                <p className="font-semibold text-stone-900">Buyer activity</p>
-                <p className="mt-2">{profile.totalPurchases} purchases completed through the marketplace.</p>
+              <div className="flex items-center justify-between border-b border-stone-100 pb-4">
+                <p className="font-sans text-sm font-semibold text-stone-900">Buyer activity</p>
+                <p className="text-sm text-stone-500">{profile.totalPurchases} completed purchases</p>
               </div>
             ) : null}
             {isBuyer ? (
-              <div className="rounded-[1.5rem] bg-[#faf6f0] p-4">
-                <p className="font-semibold text-stone-900">Wishlist activity</p>
-                <p className="mt-2">{wishlistQuery.data?.wishlist?.length || 0} saved items waiting for you.</p>
+              <div className="flex items-center justify-between border-b border-stone-100 pb-4">
+                <p className="font-sans text-sm font-semibold text-stone-900">Wishlist</p>
+                <p className="text-sm text-stone-500">{wishlistQuery.data?.wishlist?.length || 0} saved items</p>
               </div>
             ) : null}
           </div>
         </div>
 
         {isSeller ? (
-          <div className="rounded-[2rem] border border-stone-300/60 bg-white/80 p-8 shadow-[0_18px_50px_-30px_rgba(55,45,32,0.45)] backdrop-blur">
-          <div className="flex items-center gap-3">
-            <Leaf className="h-5 w-5 text-[#4e7f74]" />
-            <h2 className="font-heading text-3xl text-stone-900">Recent listings</h2>
-          </div>
-          <div className="mt-6 space-y-4">
-            {profile.recentListings.length === 0 ? (
-              <p className="text-stone-600">You have not created any listings yet.</p>
-            ) : profile.recentListings.map((listing) => (
-              <div key={listing.id} className="flex gap-4 rounded-[1.5rem] border border-stone-300/60 bg-[#faf6f0] p-4">
-                <div className="h-20 w-20 shrink-0 overflow-hidden rounded-2xl bg-stone-200">
-                  {listing.imageUrl ? <img src={listing.imageUrl} alt={listing.title} className="h-full w-full object-cover" /> : null}
-                </div>
-                <div className="min-w-0 flex-1">
-                  <div className="flex items-start justify-between gap-3">
-                    <div>
-                      <p className="font-semibold text-stone-900">{listing.title}</p>
-                      <p className="text-sm text-stone-600">{listing.category}</p>
-                    </div>
-                    <span className="rounded-full bg-white px-3 py-1 text-xs font-semibold uppercase tracking-[0.18em] text-stone-600">
-                      {listing.status}
-                    </span>
+          <div className="rounded-3xl border border-stone-200 bg-white p-8">
+            <h2 className="font-heading text-2xl text-stone-800">Recent listings</h2>
+            <div className="mt-8 space-y-6">
+              {profile.recentListings.length === 0 ? (
+                <p className="text-sm text-stone-500">You have not created any listings yet.</p>
+              ) : profile.recentListings.map((listing) => (
+                <div key={listing.id} className="flex gap-4">
+                  <div className="h-16 w-16 shrink-0 overflow-hidden rounded-lg bg-stone-100">
+                    {listing.imageUrl ? <img src={listing.imageUrl} alt={listing.title} className="h-full w-full object-cover" /> : null}
                   </div>
-                  <div className="mt-2 flex items-center justify-between gap-3">
-                    <p className="text-sm text-stone-700">${listing.price.toFixed(2)}</p>
+                  <div className="min-w-0 flex-1">
+                    <div className="flex items-start justify-between gap-3">
+                      <div>
+                        <p className="font-sans text-sm font-semibold text-stone-900">{listing.title}</p>
+                        <p className="mt-1 text-[10px] tracking-widest text-stone-400 uppercase">{listing.category} &middot; {listing.status}</p>
+                      </div>
+                      <p className="text-sm text-stone-600">${listing.price.toFixed(2)}</p>
+                    </div>
                     {listing.status !== 'sold' ? (
-                      <Link to={`/sell?listing=${listing.id}`} className="inline-flex items-center gap-1 rounded-full bg-white px-3 py-2 text-xs font-semibold text-stone-800">
-                        <Pencil className="h-3.5 w-3.5" />
-                        Manage
-                      </Link>
+                      <div className="mt-2 text-right">
+                        <Link to={`/sell?listing=${listing.id}`} className="text-xs font-bold tracking-widest text-[#556b5d] uppercase hover:underline">
+                          Manage
+                        </Link>
+                      </div>
                     ) : null}
                   </div>
                 </div>
-              </div>
-            ))}
-          </div>
+              ))}
+            </div>
           </div>
         ) : (
-          <div className="rounded-[2rem] border border-stone-300/60 bg-white/80 p-8 shadow-[0_18px_50px_-30px_rgba(55,45,32,0.45)] backdrop-blur">
-            <div className="flex items-center gap-3">
-              <ShoppingBag className="h-5 w-5 text-[#4e7f74]" />
-              <h2 className="font-heading text-3xl text-stone-900">Recent purchases</h2>
-            </div>
-            <div className="mt-6 space-y-4">
-              {profile.recentPurchases.length === 0 ? <p className="text-stone-600">You have not purchased anything yet.</p> : profile.recentPurchases.map((purchase) => (
-                <div key={purchase.id} className="flex gap-4 rounded-[1.5rem] border border-stone-300/60 bg-[#faf6f0] p-4">
-                  <div className="h-20 w-20 shrink-0 overflow-hidden rounded-2xl bg-stone-200">
+          <div className="rounded-3xl border border-stone-200 bg-white p-8">
+            <h2 className="font-heading text-2xl text-stone-800">Recent purchases</h2>
+            <div className="mt-8 space-y-6">
+              {profile.recentPurchases.length === 0 ? <p className="text-sm text-stone-500">You have not purchased anything yet.</p> : profile.recentPurchases.map((purchase) => (
+                <div key={purchase.id} className="flex gap-4">
+                  <div className="h-16 w-16 shrink-0 overflow-hidden rounded-lg bg-stone-100">
                     {purchase.imageUrl ? <img src={purchase.imageUrl} alt={purchase.title} className="h-full w-full object-cover" /> : null}
                   </div>
                   <div className="min-w-0 flex-1">
-                    <p className="font-semibold text-stone-900">{purchase.title}</p>
-                    <p className="text-sm text-stone-600">{purchase.materialName} · Eco {purchase.ecoScoreGrade}</p>
-                    <p className="mt-2 text-sm text-stone-700">${purchase.price.toFixed(2)}</p>
+                    <div className="flex items-start justify-between gap-3">
+                      <div>
+                        <p className="font-sans text-sm font-semibold text-stone-900">{purchase.title}</p>
+                        <p className="mt-1 text-[10px] tracking-widest text-stone-400 uppercase">{purchase.materialName} &middot; ECO {purchase.ecoScoreGrade}</p>
+                      </div>
+                      <p className="text-sm text-stone-600">${purchase.price.toFixed(2)}</p>
+                    </div>
                   </div>
                 </div>
               ))}
@@ -158,26 +149,22 @@ export function AccountPage() {
       </section>
 
       {isBuyer ? (
-        <section className="rounded-[2rem] border border-stone-300/60 bg-white/80 p-8 shadow-[0_18px_50px_-30px_rgba(55,45,32,0.45)] backdrop-blur">
-        <div className="flex items-center gap-3">
-          <Heart className="h-5 w-5 text-[#4e7f74]" />
-          <h2 className="font-heading text-3xl text-stone-900">Wishlist</h2>
-        </div>
-        <div className="mt-6 grid gap-4 lg:grid-cols-2">
-          {(wishlistQuery.data?.wishlist || []).map((item) => (
-            <Link key={item.id} to={`/purchase/${item.id}`} className="flex gap-4 rounded-[1.5rem] border border-stone-300/60 bg-[#faf6f0] p-4">
-              <div className="h-20 w-20 shrink-0 overflow-hidden rounded-2xl bg-stone-200">
-                {item.imageUrl ? <img src={item.imageUrl} alt={item.title} className="h-full w-full object-cover" /> : null}
-              </div>
-              <div className="min-w-0 flex-1">
-                <p className="font-semibold text-stone-900">{item.title}</p>
-                <p className="text-sm text-stone-600">{item.material.name} · Eco {item.ecoScoreGrade}</p>
-                <p className="mt-2 text-sm text-stone-700">${item.price.toFixed(2)}</p>
-              </div>
-            </Link>
-          ))}
-          {(wishlistQuery.data?.wishlist || []).length === 0 ? <p className="text-stone-600">You have not saved any items yet.</p> : null}
-        </div>
+        <section className="rounded-3xl border border-stone-200 bg-[#f0eae1]/50 p-8">
+          <h2 className="font-heading text-2xl text-stone-800">Wishlist</h2>
+          <div className="mt-8 grid gap-4 lg:grid-cols-2">
+            {(wishlistQuery.data?.wishlist || []).map((item) => (
+              <Link key={item.id} to={`/purchase/${item.id}`} className="flex items-center gap-4 rounded-2xl bg-white p-4 shadow-sm transition hover:-translate-y-0.5">
+                <div className="h-16 w-16 shrink-0 overflow-hidden rounded-lg bg-stone-100">
+                  {item.imageUrl ? <img src={item.imageUrl} alt={item.title} className="h-full w-full object-cover" /> : null}
+                </div>
+                <div className="min-w-0 flex-1">
+                  <p className="font-sans text-sm font-semibold text-stone-900">{item.title} <span className="ml-2 font-normal text-stone-500">${item.price.toFixed(2)}</span></p>
+                  <p className="mt-1 text-[10px] tracking-widest text-stone-400 uppercase">Eco {item.ecoScoreGrade}</p>
+                </div>
+              </Link>
+            ))}
+            {(wishlistQuery.data?.wishlist || []).length === 0 ? <p className="text-sm text-stone-500">You have not saved any items yet.</p> : null}
+          </div>
         </section>
       ) : null}
     </div>
@@ -186,19 +173,20 @@ export function AccountPage() {
 
 function ProfileMetric({ icon, label, value }) {
   return (
-    <div className="rounded-[1.5rem] border border-stone-300/60 bg-white/80 p-5 shadow-[0_18px_40px_-32px_rgba(55,45,32,0.45)] backdrop-blur">
-      {icon}
-      <p className="mt-3 text-3xl font-semibold text-stone-900">{value}</p>
-      <p className="text-sm text-stone-500">{label}</p>
+    <div className="rounded-3xl border border-stone-200 bg-white p-6 shadow-sm">
+      <div className="mb-4 inline-flex h-8 w-8 items-center justify-center rounded-full bg-stone-100 text-stone-500">
+        {icon}
+      </div>
+      <p className="font-noto text-4xl text-stone-900">{value}</p>
+      <p className="mt-2 text-[10px] font-bold tracking-widest text-stone-400 uppercase">{label}</p>
     </div>
   );
 }
 
 function ProfileState({ message, tone = 'default' }) {
   return (
-    <section className={`rounded-[2rem] border px-6 py-10 text-center ${tone === 'error' ? 'border-rose-200 bg-rose-50 text-rose-700' : 'border-stone-300/60 bg-white/80 text-stone-600'}`}>
-      <Leaf className="mx-auto mb-4 h-6 w-6" />
+    <div className={`rounded-2xl border px-6 py-16 text-center ${tone === 'error' ? 'border-rose-100 bg-rose-50 text-rose-600' : 'border-stone-200 bg-white/50 text-stone-500'}`}>
       <p>{message}</p>
-    </section>
+    </div>
   );
 }

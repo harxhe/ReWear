@@ -3,6 +3,7 @@ import { Navigate, Route, Routes } from 'react-router-dom';
 import { AppShell } from './components/app-shell.jsx';
 import { AccountPage } from './pages/account-page.jsx';
 import { DashboardPage } from './pages/dashboard-page.jsx';
+import { LandingPage } from './pages/landing-page.jsx';
 import { LoginPage } from './pages/login-page.jsx';
 import { MarketplacePage } from './pages/marketplace-page.jsx';
 import { PurchasePage } from './pages/purchase-page.jsx';
@@ -30,8 +31,9 @@ function ProtectedRoute({ allowedRoles, children }) {
 function App() {
   return (
     <Routes>
+      <Route path="/" element={<LandingPage />} />
+      <Route path="/login" element={<LoginPage />} />
       <Route element={<AppShell />}>
-        <Route index element={<LoginPage />} />
         <Route
           path="/marketplace"
           element={(
@@ -72,7 +74,6 @@ function App() {
             </ProtectedRoute>
           )}
         />
-        <Route path="/login" element={<Navigate to="/" replace />} />
       </Route>
     </Routes>
   );

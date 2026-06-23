@@ -1,17 +1,17 @@
-import { Droplets, Leaf, Recycle } from 'lucide-react';
+import { Cloud, Droplets, Heart, Leaf } from 'lucide-react';
 
 const gradeStyles = {
-  A: 'bg-emerald-600 text-white',
-  B: 'bg-lime-600 text-white',
-  C: 'bg-amber-500 text-stone-900',
-  D: 'bg-orange-500 text-white',
-  E: 'bg-rose-600 text-white',
+  A: 'bg-[#556b5d] text-white',
+  B: 'bg-[#6b826b] text-white',
+  C: 'bg-[#c1a68d] text-white',
+  D: 'bg-[#c88f7b] text-white',
+  E: 'bg-[#b0705b] text-white',
 };
 
 export function ProductCard({ product }) {
   return (
-    <article className="group overflow-hidden rounded-[2rem] border border-stone-300/60 bg-white/80 shadow-[0_20px_60px_-30px_rgba(55,45,32,0.45)] backdrop-blur transition hover:-translate-y-1 hover:shadow-[0_24px_70px_-28px_rgba(55,45,32,0.55)]">
-      <div className="relative h-72 overflow-hidden bg-[linear-gradient(135deg,_#c6d4b2_0%,_#efe3d0_55%,_#d8cab1_100%)] p-6">
+    <article className="group cursor-pointer">
+      <div className="relative mb-4 aspect-[4/5] overflow-hidden rounded-2xl bg-[#e5e5e5]">
         {product.imageUrl ? (
           <img
             src={product.imageUrl}
@@ -19,51 +19,34 @@ export function ProductCard({ product }) {
             className="absolute inset-0 h-full w-full object-cover transition duration-500 group-hover:scale-105"
           />
         ) : null}
-        <div className="absolute inset-0 bg-gradient-to-t from-stone-950/55 via-stone-950/10 to-white/10" />
-        <div className={`absolute right-5 top-5 rounded-full px-4 py-2 text-sm font-bold ${gradeStyles[product.ecoScoreGrade] || gradeStyles.E}`}>
-          Eco {product.ecoScoreGrade}
+        
+        <div className={`absolute left-3 top-3 flex items-center gap-1.5 rounded-full px-2.5 py-1 text-xs font-semibold tracking-wide shadow-sm backdrop-blur-md ${gradeStyles[product.ecoScoreGrade] || gradeStyles.E}`}>
+          <Leaf className="h-3 w-3" /> ECO {product.ecoScoreGrade}
         </div>
-        <div className="relative flex h-full items-end justify-between">
-          <div>
-            <p className="text-xs uppercase tracking-[0.3em] text-white/75">{product.category}</p>
-            <h3 className="mt-3 max-w-[13rem] font-heading text-3xl text-white">{product.title}</h3>
-          </div>
-          <div className="rounded-full border border-white/40 bg-white/20 px-4 py-3 text-sm font-medium text-white backdrop-blur">
-            {product.material.name}
-          </div>
+        
+        <div className="absolute right-3 top-3 flex h-8 w-8 items-center justify-center rounded-full bg-white/90 text-stone-400 shadow-sm backdrop-blur-md transition hover:scale-105 hover:text-rose-500">
+           <Heart className={`h-4 w-4 ${product.isWishlisted ? 'fill-rose-500 text-rose-500' : ''}`} />
         </div>
       </div>
 
-      <div className="space-y-5 p-6">
+      <div className="space-y-1">
         <div className="flex items-start justify-between gap-4">
-          <div>
-            <p className="text-sm text-stone-500">Sold by {product.seller.name}</p>
-            <p className="mt-1 text-sm text-stone-600">{product.conditionLabel}</p>
-          </div>
-          <p className="text-2xl font-semibold text-stone-900">${product.price.toFixed(2)}</p>
+          <h3 className="font-serif text-xl text-stone-900 line-clamp-1">{product.title}</h3>
+          <p className="font-sans text-sm font-semibold text-stone-900">${product.price.toFixed(2)}</p>
         </div>
+        
+        <p className="font-sans text-[10px] uppercase tracking-widest text-stone-500">
+          {product.material.name} &middot; {product.conditionLabel.toUpperCase()}
+        </p>
 
-        {product.isWishlisted ? (
-          <div className="inline-flex rounded-full bg-rose-50 px-3 py-1 text-xs font-semibold uppercase tracking-[0.2em] text-rose-600">
-            In wishlist
+        <div className="mt-3 flex items-center gap-4 text-xs text-stone-600">
+          <div className="flex items-center gap-1.5">
+            <Droplets className="h-3 w-3" />
+            <span>{Math.round(product.waterSavedLiters).toLocaleString()}L saved</span>
           </div>
-        ) : null}
-
-        <div className="grid grid-cols-3 gap-3 text-sm text-stone-700">
-          <div className="rounded-2xl bg-[#eef3e7] p-3">
-            <Leaf className="mb-2 h-4 w-4 text-[#3b6b59]" />
-            <p className="font-semibold">{product.ecoScoreNumeric}</p>
-            <p className="text-xs text-stone-500">Eco score</p>
-          </div>
-          <div className="rounded-2xl bg-[#f3eee4] p-3">
-            <Droplets className="mb-2 h-4 w-4 text-[#4e7f74]" />
-            <p className="font-semibold">{Math.round(product.waterSavedLiters)} L</p>
-            <p className="text-xs text-stone-500">Water saved</p>
-          </div>
-          <div className="rounded-2xl bg-[#f1e6de] p-3">
-            <Recycle className="mb-2 h-4 w-4 text-[#8c5b43]" />
-            <p className="font-semibold">{product.co2DivertedKg.toFixed(1)} kg</p>
-            <p className="text-xs text-stone-500">CO2 diverted</p>
+          <div className="flex items-center gap-1.5">
+            <Cloud className="h-3 w-3" />
+            <span>{product.co2DivertedKg.toFixed(1)}kg CO₂</span>
           </div>
         </div>
       </div>

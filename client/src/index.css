@@ -1,10 +1,12 @@
-@import url('https://fonts.googleapis.com/css2?family=Unica+One&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;0,600;0,700;1,400;1,500;1,600&family=IBM+Plex+Serif:ital,wght@0,300;0,400;0,500;0,600;0,700;1,400&family=Inter:wght@300;400;500;600;700&family=Noto+Serif:ital,wght@0,400;0,500;0,600;0,700;1,400&display=swap');
 @import 'tailwindcss';
 
 @theme {
-  --font-sans: Arial, Helvetica, sans-serif;
-  --font-heading: Arial, Helvetica, sans-serif;
-  --font-logo: 'Unica One', sans-serif;
+  --font-sans: 'Inter', Arial, Helvetica, sans-serif;
+  --font-heading: 'Cormorant Garamond', Georgia, serif;
+  --font-logo: 'Inter', sans-serif;
+  --font-serif: 'IBM Plex Serif', serif;
+  --font-noto: 'Noto Serif', serif;
 }
 
 :root {
@@ -19,6 +21,13 @@
 
 * {
   box-sizing: border-box;
+  -ms-overflow-style: none;  /* IE and Edge */
+  scrollbar-width: none;  /* Firefox */
+}
+
+/* Hide scrollbar for Chrome, Safari and Opera */
+::-webkit-scrollbar {
+  display: none;
 }
 
 html {
