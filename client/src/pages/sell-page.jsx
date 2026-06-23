@@ -123,10 +123,10 @@ export function SellPage() {
 
   return (
     <div className="pt-0 pb-0">
-      <section className="grid gap-8 lg:grid-cols-[1fr_400px]">
-        <form className="space-y-6" onSubmit={(event) => { event.preventDefault(); saveListingMutation.mutate(); }}>
+      <section className="grid gap-12 lg:grid-cols-[1fr_500px]">
+        <form className="space-y-8" onSubmit={(event) => { event.preventDefault(); saveListingMutation.mutate(); }}>
           
-          <div className="grid gap-x-6 gap-y-5 md:grid-cols-2">
+          <div className="grid gap-x-8 gap-y-8 md:grid-cols-2">
             <Input label="Item title" value={formState.title} onChange={(value) => { setSuccessMessage(''); setDraftState((current) => ({ ...(current || formState), title: value })); }} placeholder="Used cotton work shirt" />
             <Input label="Price ($)" value={formState.price} onChange={(value) => { setSuccessMessage(''); setDraftState((current) => ({ ...(current || formState), price: value })); }} placeholder="34" />
             <Select label="Category" value={formState.category} onChange={(value) => { setSuccessMessage(''); setDraftState((current) => ({ ...(current || formState), category: value })); }} options={['Tops', 'Bottoms', 'Dresses', 'Outerwear', 'Knitwear', 'Accessories', 'Footwear', 'Denim']} />
@@ -135,17 +135,42 @@ export function SellPage() {
             <label className="block text-xs font-bold tracking-widest text-stone-400 uppercase md:col-span-2">
               <span className="mb-3 block text-stone-500">Material</span>
               <div className="relative">
-                <select className="w-full appearance-none rounded-full border border-stone-200 bg-white px-5 py-3 text-sm text-stone-900 font-sans normal-case tracking-normal outline-none transition focus:border-stone-400" value={selectedMaterialId} onChange={(event) => { setSuccessMessage(''); setDraftState((current) => ({ ...(current || formState), materialId: event.target.value })); }}>
+                <select className="w-full appearance-none rounded-full border border-stone-200 bg-white px-6 py-4 text-base text-stone-900 font-sans normal-case tracking-normal outline-none transition focus:border-stone-400" value={selectedMaterialId} onChange={(event) => { setSuccessMessage(''); setDraftState((current) => ({ ...(current || formState), materialId: event.target.value })); }}>
                   {(materialsQuery.data?.materials || []).map((material) => <option key={material.id} value={material.id}>{material.name}</option>)}
                 </select>
               </div>
             </label>
             
-            <Input label="Image URL" value={formState.imageUrl} onChange={(value) => { setSuccessMessage(''); setDraftState((current) => ({ ...(current || formState), imageUrl: value })); }} placeholder="Optional image link" />
+            <div className="flex gap-4 md:col-span-2">
+              <div className="flex-1">
+                <Input label="Image URL" value={formState.imageUrl} onChange={(value) => { setSuccessMessage(''); setDraftState((current) => ({ ...(current || formState), imageUrl: value })); }} placeholder="Optional image link" />
+              </div>
+              <div className="flex items-end">
+                <label className="flex cursor-pointer items-center justify-center rounded-full border border-transparent bg-stone-200 px-8 py-4 text-base font-sans normal-case font-semibold text-stone-800 transition hover:bg-stone-300">
+                  Upload image
+                  <input
+                    type="file"
+                    accept="image/*"
+                    className="hidden"
+                    onChange={(e) => {
+                      const file = e.target.files[0];
+                      if (file) {
+                        const reader = new FileReader();
+                        reader.onloadend = () => {
+                          setSuccessMessage('');
+                          setDraftState((current) => ({ ...(current || formState), imageUrl: reader.result }));
+                        };
+                        reader.readAsDataURL(file);
+                      }
+                    }}
+                  />
+                </label>
+              </div>
+            </div>
             
             <label className="block text-xs font-bold tracking-widest text-stone-400 uppercase md:col-span-2">
-              <span className="mb-2 block text-stone-500">Description</span>
-              <textarea className="min-h-24 w-full rounded-2xl border border-stone-200 bg-white px-5 py-3 text-sm text-stone-900 font-sans normal-case tracking-normal outline-none transition focus:border-stone-400" value={formState.description} onChange={(event) => { setSuccessMessage(''); setDraftState((current) => ({ ...(current || formState), description: event.target.value })); }} placeholder="Share fit, wear notes, and why this piece deserves another cycle." />
+              <span className="mb-3 block text-stone-500">Description</span>
+              <textarea className="min-h-40 w-full rounded-2xl border border-stone-200 bg-white px-6 py-4 text-base text-stone-900 font-sans normal-case tracking-normal outline-none transition focus:border-stone-400" value={formState.description} onChange={(event) => { setSuccessMessage(''); setDraftState((current) => ({ ...(current || formState), description: event.target.value })); }} placeholder="Share fit, wear notes, and why this piece deserves another cycle." />
             </label>
           </div>
 
@@ -165,30 +190,30 @@ export function SellPage() {
           </div>
         </form>
 
-        <aside className="space-y-4 rounded-3xl bg-[#f0eae1] p-5">
+        <aside className="space-y-6 rounded-3xl bg-[#f0eae1] p-8 flex flex-col">
           <div>
-            <p className="text-[10px] font-bold tracking-widest text-stone-400 uppercase">Live preview</p>
-            <h2 className="mt-1 font-heading text-2xl text-stone-900">Your eco-badge updates before submit.</h2>
+            <p className="text-xs font-bold tracking-widest text-stone-400 uppercase">Live preview</p>
+            <h2 className="mt-2 font-heading text-3xl text-stone-900">Your eco-badge updates before submit.</h2>
           </div>
 
-          <div className="rounded-2xl bg-[#556b5d] p-5 text-white">
-            <div className="flex items-start justify-between gap-4 border-b border-white/20 pb-4">
+          <div className="rounded-2xl bg-[#556b5d] p-8 text-white flex-grow flex flex-col justify-center">
+            <div className="flex items-start justify-between gap-4 border-b border-white/20 pb-6 mb-6">
               <div>
-                <p className="text-[10px] font-bold tracking-widest text-white/60 uppercase">Projected badge</p>
-                <p className="mt-1 font-heading text-6xl leading-none">{preview?.ecoScoreGrade || '--'}</p>
+                <p className="text-xs font-bold tracking-widest text-white/60 uppercase">Projected badge</p>
+                <p className="mt-2 font-heading text-8xl leading-none">{preview?.ecoScoreGrade || '--'}</p>
               </div>
-              <div className="rounded-full border border-white/20 px-3 py-1 text-[10px] font-semibold tracking-wide uppercase">{formState.conditionLabel}</div>
+              <div className="rounded-full border border-white/20 px-4 py-1.5 text-xs font-semibold tracking-wide uppercase">{formState.conditionLabel}</div>
             </div>
-            <p className="mt-4 font-heading text-xl leading-snug">{formState.title || 'Your listing title will appear here.'}</p>
+            <p className="font-heading text-2xl leading-snug">{formState.title || 'Your listing title will appear here.'}</p>
           </div>
 
-          <div className="grid grid-cols-3 gap-2">
-            <Metric icon={<Leaf className="h-3 w-3 text-[#556b5d]" />} label="Score" value={preview ? String(preview.ecoScoreNumeric) : '--'} />
-            <Metric icon={<Droplets className="h-3 w-3 text-[#4e7f74]" />} label="Water saved" value={preview ? `${Math.round(preview.waterSavedLiters).toLocaleString()} L` : '--'} />
-            <Metric icon={<Cloud className="h-3 w-3 text-[#8c5b43]" />} label="CO₂" value={preview ? `${preview.co2DivertedKg.toFixed(1)} kg` : '--'} />
+          <div className="grid grid-cols-3 gap-4">
+            <Metric icon={<Leaf className="h-5 w-5 text-[#556b5d]" />} label="Score" value={preview ? String(preview.ecoScoreNumeric) : '--'} />
+            <Metric icon={<Droplets className="h-5 w-5 text-[#4e7f74]" />} label="Water saved" value={preview ? `${Math.round(preview.waterSavedLiters).toLocaleString()} L` : '--'} />
+            <Metric icon={<Cloud className="h-5 w-5 text-[#8c5b43]" />} label="CO₂" value={preview ? `${preview.co2DivertedKg.toFixed(1)} kg` : '--'} />
           </div>
 
-          <p className="text-[10px] text-stone-500 leading-relaxed border-t border-stone-300 pt-4">
+          <p className="text-xs text-stone-500 leading-relaxed border-t border-stone-300 pt-6 mt-2">
             Formula: <span className="font-semibold text-stone-700">(material base value x 0.6) + (condition weight x 0.4)</span>. Worn and gently used items receive the strongest circularity bonus.
           </p>
         </aside>
@@ -201,7 +226,7 @@ function Input({ label, onChange, placeholder, value }) {
   return (
     <label className="block text-xs font-bold tracking-widest text-stone-400 uppercase">
       <span className="mb-3 block text-stone-500">{label}</span>
-      <input className="w-full rounded-full border border-stone-200 bg-white px-5 py-3 text-sm text-stone-900 font-sans normal-case tracking-normal outline-none transition focus:border-stone-400" value={value} onChange={(event) => onChange(event.target.value)} placeholder={placeholder} />
+      <input className="w-full rounded-full border border-stone-200 bg-white px-6 py-4 text-base text-stone-900 font-sans normal-case tracking-normal outline-none transition focus:border-stone-400" value={value} onChange={(event) => onChange(event.target.value)} placeholder={placeholder} />
     </label>
   );
 }
@@ -211,7 +236,7 @@ function Select({ label, onChange, options, value }) {
     <label className="block text-xs font-bold tracking-widest text-stone-400 uppercase">
       <span className="mb-3 block text-stone-500">{label}</span>
       <div className="relative">
-        <select className="w-full appearance-none rounded-full border border-stone-200 bg-white px-5 py-3 text-sm text-stone-900 font-sans normal-case tracking-normal outline-none transition focus:border-stone-400" value={value} onChange={(event) => onChange(event.target.value)}>
+        <select className="w-full appearance-none rounded-full border border-stone-200 bg-white px-6 py-4 text-base text-stone-900 font-sans normal-case tracking-normal outline-none transition focus:border-stone-400" value={value} onChange={(event) => onChange(event.target.value)}>
           {options.map((option) => <option key={option} value={option}>{option}</option>)}
         </select>
       </div>
@@ -221,12 +246,12 @@ function Select({ label, onChange, options, value }) {
 
 function Metric({ icon, label, value }) {
   return (
-    <div className="flex flex-col items-center justify-center rounded-xl bg-white p-3 shadow-sm text-center">
-      <div className="flex h-6 w-6 items-center justify-center rounded-full bg-[#f8f6f0] mb-2">
+    <div className="flex flex-col items-center justify-center rounded-2xl bg-white p-5 shadow-sm text-center">
+      <div className="flex h-10 w-10 items-center justify-center rounded-full bg-[#f8f6f0] mb-3">
         {icon}
       </div>
-      <p className="font-noto text-sm font-bold text-stone-900">{value}</p>
-      <p className="mt-1 text-[9px] font-semibold text-stone-600 uppercase tracking-widest leading-tight">{label}</p>
+      <p className="font-noto text-lg font-bold text-stone-900">{value}</p>
+      <p className="mt-1 text-[10px] font-semibold text-stone-600 uppercase tracking-widest leading-tight">{label}</p>
     </div>
   );
 }
