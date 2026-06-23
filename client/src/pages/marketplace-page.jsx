@@ -76,7 +76,7 @@ export function MarketplacePage() {
       </section>
 
       <div className="grid gap-12 lg:grid-cols-[240px_1fr]">
-        <aside className="space-y-10 lg:sticky lg:top-24 lg:max-h-[calc(100vh-6rem)] lg:overflow-y-auto">
+        <aside className="space-y-10 lg:sticky lg:top-24 lg:max-h-[calc(100vh-6rem)] lg:overflow-y-auto lg:self-start">
           <div>
             <h2 className="flex items-center gap-2 text-xs font-bold tracking-widest text-stone-500 uppercase">
               <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M4 21v-7"/><path d="M4 10V3"/><path d="M12 21v-9"/><path d="M12 8V3"/><path d="M20 21v-5"/><path d="M20 12V3"/><path d="M1 14h6"/><path d="M9 8h6"/><path d="M17 16h6"/></svg>

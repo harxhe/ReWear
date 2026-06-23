@@ -1,4 +1,5 @@
 import { Droplets, Leaf, LogOut, Recycle, Shirt, UserCircle2 } from 'lucide-react';
+import { useEffect } from 'react';
 import { NavLink, Outlet, useNavigate } from 'react-router-dom';
 
 import { useAuth } from '../state/auth-context.js';
@@ -6,6 +7,14 @@ import { useAuth } from '../state/auth-context.js';
 export function AppShell() {
   const navigate = useNavigate();
   const { isAuthenticated, signOut, user } = useAuth();
+
+  useEffect(() => {
+    document.documentElement.style.fontSize = '90%';
+    return () => {
+      document.documentElement.style.fontSize = '';
+    };
+  }, []);
+
   const navItems = [
     { icon: Shirt, label: 'Marketplace', to: '/marketplace' },
     { icon: Recycle, label: 'Sell', to: '/sell', roles: ['seller'] },

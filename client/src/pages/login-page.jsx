@@ -37,11 +37,11 @@ export function LoginPage() {
   }
 
   return (
-    <div className="flex min-h-[calc(100vh-4rem)] items-center justify-center py-6 px-4">
-      <div className="w-full max-w-md rounded-3xl border border-stone-200 bg-white p-6 sm:p-8 shadow-[0_8px_30px_rgb(0,0,0,0.04)]">
-        <div className="mb-6 text-center">
-          <Shirt className="mx-auto h-8 w-8 text-[#1b3626] mb-4" />
-          <h1 className="font-heading text-3xl text-stone-900">
+    <div className="flex min-h-[calc(100vh-4rem)] items-center justify-center py-4 px-4">
+      <div className="w-full max-w-md rounded-3xl border border-stone-200 bg-white p-5 sm:p-6 shadow-[0_8px_30px_rgb(0,0,0,0.04)]">
+        <div className="mb-4 text-center">
+          <Shirt className="mx-auto h-6 w-6 text-[#1b3626] mb-2" />
+          <h1 className="font-heading text-2xl text-stone-900">
             {mode === 'login' ? 'Welcome back' : 'Create an account'}
           </h1>
           <p className="mt-2 text-sm text-stone-500">
@@ -49,13 +49,13 @@ export function LoginPage() {
           </p>
         </div>
 
-        <div className="flex gap-4 border-b border-stone-100 pb-5">
+        <div className="flex gap-4 border-b border-stone-100 pb-4">
           <button type="button" className={`text-sm font-semibold transition flex-1 text-center pb-2 border-b-2 ${mode === 'login' ? 'text-stone-900 border-stone-900' : 'text-stone-400 border-transparent hover:text-stone-600'}`} onClick={() => setMode('login')}>Log in</button>
           <button type="button" className={`text-sm font-semibold transition flex-1 text-center pb-2 border-b-2 ${mode === 'signup' ? 'text-stone-900 border-stone-900' : 'text-stone-400 border-transparent hover:text-stone-600'}`} onClick={() => setMode('signup')}>Sign up</button>
         </div>
 
         <form
-          className="mt-6 space-y-5"
+          className="mt-5 space-y-4"
           onSubmit={(event) => {
             event.preventDefault();
             authMutation.mutate();
@@ -64,11 +64,11 @@ export function LoginPage() {
           {mode === 'signup' ? (
             <>
               <Field label="Full name" icon={<UserRound className="h-4 w-4" />}>
-                <input className="w-full rounded-full border border-stone-200 bg-white px-5 py-3 text-sm font-sans normal-case tracking-normal outline-none transition focus:border-stone-400" value={formState.fullName} onChange={(event) => setFormState((current) => ({ ...current, fullName: event.target.value }))} placeholder="Ava Patel" required />
+                <input className="w-full rounded-full border border-stone-200 bg-white px-5 py-2.5 text-sm font-sans normal-case tracking-normal outline-none transition focus:border-stone-400" value={formState.fullName} onChange={(event) => setFormState((current) => ({ ...current, fullName: event.target.value }))} placeholder="Ava Patel" required />
               </Field>
               <Field label="Account type" icon={<Shirt className="h-4 w-4" />}>
                 <div className="relative">
-                  <select className="w-full appearance-none rounded-full border border-stone-200 bg-white px-5 py-3 text-sm font-sans normal-case tracking-normal outline-none transition focus:border-stone-400" value={formState.role} onChange={(event) => setFormState((current) => ({ ...current, role: event.target.value }))}>
+                  <select className="w-full appearance-none rounded-full border border-stone-200 bg-white px-5 py-2.5 text-sm font-sans normal-case tracking-normal outline-none transition focus:border-stone-400" value={formState.role} onChange={(event) => setFormState((current) => ({ ...current, role: event.target.value }))}>
                     <option value="buyer">Buyer</option>
                     <option value="seller">Seller</option>
                   </select>
@@ -78,24 +78,24 @@ export function LoginPage() {
           ) : null}
 
           <Field label="Email" icon={<Mail className="h-4 w-4" />}>
-            <input className="w-full rounded-full border border-stone-200 bg-white px-5 py-3 text-sm font-sans normal-case tracking-normal outline-none transition focus:border-stone-400" type="email" value={formState.email} onChange={(event) => setFormState((current) => ({ ...current, email: event.target.value }))} placeholder="you@example.com" required />
+            <input className="w-full rounded-full border border-stone-200 bg-white px-5 py-2.5 text-sm font-sans normal-case tracking-normal outline-none transition focus:border-stone-400" type="email" value={formState.email} onChange={(event) => setFormState((current) => ({ ...current, email: event.target.value }))} placeholder="you@example.com" required />
           </Field>
 
           <Field label="Password" icon={<LockKeyhole className="h-4 w-4" />}>
-            <input className="w-full rounded-full border border-stone-200 bg-white px-5 py-3 text-sm font-sans normal-case tracking-normal outline-none transition focus:border-stone-400" type="password" value={formState.password} onChange={(event) => setFormState((current) => ({ ...current, password: event.target.value }))} placeholder="Minimum 8 characters" required />
+            <input className="w-full rounded-full border border-stone-200 bg-white px-5 py-2.5 text-sm font-sans normal-case tracking-normal outline-none transition focus:border-stone-400" type="password" value={formState.password} onChange={(event) => setFormState((current) => ({ ...current, password: event.target.value }))} placeholder="Minimum 8 characters" required />
           </Field>
 
           {authMutation.isError ? <p className="text-sm text-rose-600">{authMutation.error.message}</p> : null}
 
-          <button type="submit" disabled={authMutation.isPending} className="w-full rounded-full bg-[#1b3626] px-6 py-3 text-sm font-semibold text-white transition hover:bg-[#122419] disabled:opacity-50">
+          <button type="submit" disabled={authMutation.isPending} className="w-full rounded-full bg-[#1b3626] px-6 py-2.5 text-sm font-semibold text-white transition hover:bg-[#122419] disabled:opacity-50">
             {authMutation.isPending ? 'Working...' : mode === 'login' ? 'Sign In' : 'Create Account'}
           </button>
         </form>
 
         {mode === 'login' && (
-          <div className="mt-6 rounded-2xl bg-[#f8f6f0] p-5 border border-stone-100">
-            <p className="text-[10px] font-bold uppercase tracking-widest text-stone-500 mb-4 text-center">Demo accounts</p>
-            <div className="space-y-3">
+          <div className="mt-4 rounded-xl bg-[#f8f6f0] p-4 border border-stone-100">
+            <p className="text-[10px] font-bold uppercase tracking-widest text-stone-500 mb-3 text-center">Demo accounts</p>
+            <div className="space-y-2">
               <DemoAccountCard
                 email="seller@rewear.demo"
                 onFill={() => {
